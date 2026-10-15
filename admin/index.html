@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="el">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Διαχείριση — Ξενοπούλειο</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../admin.css">
+  </head>
+  <body>
+    <header class="admin-header"><a href="../">Ξενοπούλειο <span>Διαχείριση ιστοσελίδας</span></a><a href="../" target="_blank" rel="noopener">Προβολή ιστοσελίδας ↗</a></header>
+    <main class="admin-main">
+      <div id="status" class="message" role="status" aria-live="polite" hidden></div>
+      <section id="setup" class="panel" hidden>
+        <p class="eyebrow">ΠΡΩΤΗ ΕΝΕΡΓΟΠΟΙΗΣΗ</p>
+        <h1>Η διαχείριση ετοιμάστηκε.</h1>
+        <p>Χρειάζεται ακόμη σύνδεση με το Supabase, για να λειτουργήσουν οι λογαριασμοί και η αποθήκευση. Δεν μπορείτε ακόμη να δημοσιεύσετε αλλαγές.</p>
+        <p>Μπορείτε όμως να γνωρίσετε τα κουμπιά με ασφάλεια. Στη δοκιμαστική περιήγηση τίποτα δεν αλλάζει στην πραγματική ιστοσελίδα.</p>
+        <button id="start-demo" type="button">Γνωριμία με τη διαχείριση</button>
+      </section>
+      <section id="login-panel" class="panel login-panel" hidden>
+        <p class="eyebrow">ΚΑΛΩΣ ΗΡΘΑΤΕ</p><h1>Σύνδεση διαχειριστή</h1>
+        <p>Γράψτε το email και τον κωδικό σας. Δεν χρειάζεται να γνωρίζετε κώδικα.</p>
+        <form id="login-form">
+          <label for="email">Το email σας</label><input id="email" type="email" autocomplete="username" required>
+          <label for="password">Ο κωδικός σας</label><div class="password-row"><input id="password" type="password" autocomplete="current-password" required><button id="show-password" class="secondary" type="button" aria-pressed="false">Εμφάνιση</button></div>
+          <button type="submit">Είσοδος στη διαχείριση</button>
+          <button id="forgot-password" class="secondary" type="button">Ξέχασα τον κωδικό μου</button>
+        </form>
+      </section>
+      <section id="recovery-panel" class="panel login-panel" hidden>
+        <h1>Νέος κωδικός</h1><p>Επιλέξτε έναν νέο κωδικό με τουλάχιστον 12 χαρακτήρες.</p>
+        <form id="recovery-form"><label for="new-password">Νέος κωδικός</label><input id="new-password" type="password" minlength="12" autocomplete="new-password" required><label for="confirm-password">Γράψτε τον ξανά</label><input id="confirm-password" type="password" minlength="12" autocomplete="new-password" required><button type="submit">Αποθήκευση νέου κωδικού</button></form>
+      </section>
+      <section id="workspace" hidden>
+        <div class="workspace-heading"><div><p class="eyebrow">Ο ΧΩΡΟΣ ΣΑΣ</p><h1>Τι θέλετε να αλλάξετε;</h1><p id="account-label"></p></div><button id="logout" type="button" class="secondary">Αποσύνδεση</button></div>
+        <div id="demo-notice" class="message warning" hidden><strong>Δοκιμαστική περιήγηση.</strong> Δεν γίνεται αποθήκευση ή δημοσίευση. Οι αλλαγές χάνονται όταν κλείσετε τη σελίδα.</div>
+        <ol class="steps"><li>Επιλέξτε ενότητα</li><li>Γράψτε ή προσθέστε φωτογραφία</li><li>Δείτε προεπισκόπηση και δημοσιεύστε</li></ol>
+        <div class="editor-layout">
+          <aside class="panel sidebar"><h2>Οι ενότητές σας</h2><div id="section-buttons"></div><button id="posts-button" class="section-button" type="button">Αναρτήσεις και ανακοινώσεις</button><details><summary>Μικρός οδηγός βοήθειας</summary><p>Οι αλλαγές δεν φαίνονται στους επισκέπτες μέχρι να πατήσετε «Δημοσίευση αλλαγών».</p><p>Η προεπισκόπηση ανοίγει πάνω από τη διαχείριση. Πατήστε «Επιστροφή στην επεξεργασία» για να συνεχίσετε. Μην κλείσετε τη σελίδα αν έχετε αλλαγές που δεν δημοσιεύσατε.</p><p>Οι φωτογραφίες πρέπει να είναι JPG, PNG ή WebP, έως 5 MB. Ανεβάζετε μόνο υλικό που επιτρέπεται να δημοσιευτεί.</p></details></aside>
+          <section class="panel editor-panel" aria-labelledby="editor-title"><h2 id="editor-title" tabindex="-1"></h2><p id="editor-help"></p><div id="editor"></div></section>
+        </div>
+        <div class="publish-bar"><p id="save-state" aria-live="polite">Δεν υπάρχουν αδημοσίευτες αλλαγές.</p><div class="actions"><button id="preview" class="secondary" type="button">Προεπισκόπηση</button><button id="publish" type="button">Δημοσίευση αλλαγών</button></div></div>
+      </section>
+    </main>
+    <dialog id="confirm-dialog"><form method="dialog"><h2 id="confirm-title">Επιβεβαίωση</h2><p id="confirm-text"></p><div class="actions"><button value="cancel" class="secondary">Όχι, επιστροφή</button><button value="confirm">Ναι, συνέχεια</button></div></form></dialog>
+    <dialog id="preview-dialog" aria-labelledby="preview-title"><div class="preview-heading"><h2 id="preview-title">Προεπισκόπηση — δεν έχει δημοσιευτεί</h2><button id="close-preview" class="secondary" type="button">Επιστροφή στην επεξεργασία</button></div><iframe id="preview-frame" title="Προεπισκόπηση των αλλαγών στην ιστοσελίδα"></iframe></dialog>
+    <noscript><p class="message error">Για να λειτουργήσει η διαχείριση, ενεργοποιήστε τη JavaScript στον browser σας.</p></noscript>
+    <script type="module" src="../admin.js"></script>
+  </body>
+</html>

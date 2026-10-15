@@ -1,0 +1,82 @@
+@charset "UTF-8";
+:root { font-family: Arial, Helvetica, sans-serif; color: #243c32; background: #f6f3eb; font-size: 18px; line-height: 1.65; color-scheme: light; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; }
+a { color: #245c46; text-underline-offset: 4px; }
+button, input, textarea, select { font: inherit; }
+button, summary { cursor: pointer; }
+button { min-height: 52px; padding: 12px 22px; border: 2px solid #294c3b; background: #294c3b; color: #fff; border-radius: 8px; font-weight: bold; line-height: 1.4; }
+button:hover:not(:disabled) { background: #173225; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+button.secondary { background: white; color: #294c3b; }
+button.secondary:hover:not(:disabled) { background: #e9efe8; }
+button.danger { color: #952f27; border-color: #952f27; background: #fff; }
+:focus-visible { outline: 4px solid #bd652e; outline-offset: 4px; }
+h1 { font-size: clamp(28px, 4vw, 38px); line-height: 1.25; margin: 0 0 20px; }
+h2 { font-size: 26px; line-height: 1.4; margin: 0 0 16px; }
+h3 { font-size: 22px; }
+p { margin: 0 0 20px; }
+.admin-header { padding: 22px max(24px, calc((100vw - 1320px) / 2)); display: flex; justify-content: space-between; align-items: center; gap: 24px; background: #fff; border-bottom: 1px solid #d9ded5; }
+.admin-header > a:first-child { font: bold 30px Georgia, serif; text-decoration: none; }
+.admin-header span { display: block; font: 16px/1.6 Arial, sans-serif; margin-top: 6px; color: #59665b; }
+.admin-header > a:last-child { font-size: 17px; }
+.admin-main { max-width: 1320px; margin: 36px auto 0; padding: 0 24px 40px; }
+.panel { padding: 32px; background: #fff; border: 1px solid #d9ded5; border-radius: 12px; }
+.login-panel, #setup { max-width: 740px; margin: 40px auto; }
+.eyebrow { color: #9b4b2e; letter-spacing: 2px; font-size: 13px; font-weight: bold; margin-bottom: 14px; }
+label { display: block; font-weight: bold; margin: 22px 0 8px; }
+input:not([type=file]), textarea, select { display: block; width: 100%; min-height: 54px; padding: 12px; border: 2px solid #8b988b; border-radius: 6px; background: white; color: #1f3328; }
+textarea { resize: vertical; min-height: 130px; line-height: 1.65; }
+input[type=file] { display: block; width: 100%; padding: 10px 0; }
+input[type=file]::file-selector-button { padding: 10px 15px; font: inherit; cursor: pointer; }
+.password-row { display: flex; gap: 10px; }
+form > button { margin: 24px 10px 0 0; }
+.message { padding: 20px 24px; border: 2px solid #6e8f74; border-radius: 8px; background: #edf5ed; margin-bottom: 24px; overflow-wrap: anywhere; }
+.message.error { background: #fff0ed; color: #852c22; border-color: #b14b3e; }
+.message.warning { background: #fff6dd; color: #654816; border-color: #c49a43; }
+.workspace-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+.workspace-heading p { color: #536255; }
+.steps { display: flex; flex-wrap: wrap; gap: 20px 40px; padding: 20px 20px 20px 45px; margin: 0 0 28px; background: #e6ebdf; border-radius: 8px; }
+.steps li { padding-left: 4px; }
+.editor-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: start; }
+.sidebar { padding: 24px 18px; }
+.sidebar h2 { font-size: 22px; padding-inline: 10px; }
+.section-button { width: 100%; display: block; text-align: left; border: 2px solid transparent; background: transparent; color: #294c3b; font-weight: normal; padding: 12px; margin-bottom: 5px; }
+.section-button:hover:not(:disabled) { background: #edf2e9; }
+.section-button[aria-current=true] { border-color: #294c3b; background: #e6eddf; font-weight: bold; }
+details { border-top: 1px solid #d9ded5; padding: 20px 10px 0; margin-top: 18px; font-size: 16px; }
+details p { margin-top: 16px; }
+summary { font-weight: bold; }
+.editor-panel { min-height: 440px; }
+.hint { display: block; font-size: 16px; color: #586459; margin: 8px 0 16px; }
+.image-editor { padding-top: 22px; margin-top: 32px; border-top: 1px solid #d9ded5; }
+.image-editor img { display: block; max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 6px; margin: 14px 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.publish-bar { position: sticky; bottom: 0; padding: 20px 24px; margin-top: 24px; border: 1px solid #bdc7b8; background: #fafff7; border-radius: 10px; box-shadow: 0 -4px 24px #243c3212; display: flex; justify-content: space-between; align-items: center; gap: 20px; z-index: 2; }
+.publish-bar p { margin: 0; font-size: 16px; }
+.post-summary { padding: 22px 0; border-bottom: 1px solid #d9ded5; }
+.post-summary h3 { margin: 0 0 8px; overflow-wrap: anywhere; }
+.post-form { margin-top: 30px; padding-top: 24px; border-top: 2px solid #d9ded5; }
+dialog { width: min(620px, calc(100% - 32px)); border: 2px solid #294c3b; border-radius: 12px; padding: 32px; color: #243c32; }
+dialog::backdrop { background: #15271ac9; }
+#preview-dialog { width: min(1400px, calc(100% - 24px)); height: 94dvh; max-height: 94dvh; padding: 16px; }
+#preview-dialog[open] { display: flex; flex-direction: column; }
+.preview-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-bottom: 14px; }
+.preview-heading h2 { font-size: 20px; margin: 0; }
+#preview-frame { width: 100%; flex: 1; min-height: 0; border: 1px solid #bdc7b8; background: #f7f3e9; }
+@media (max-width: 900px) {
+  .editor-layout { grid-template-columns: 1fr; }
+  #section-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .publish-bar { position: static; flex-direction: column; align-items: stretch; }
+  .publish-bar .actions > button { flex: 1; }
+}
+@media (max-width: 520px) {
+  .admin-main { padding-inline: 14px; margin-top: 20px; }
+  .admin-header { padding: 18px; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .panel { padding: 22px 18px; }
+  #section-buttons { grid-template-columns: 1fr; }
+  .workspace-heading { flex-direction: column; margin-bottom: 20px; }
+  .password-row { flex-wrap: wrap; }
+  .actions { flex-direction: column; align-items: stretch; }
+}
