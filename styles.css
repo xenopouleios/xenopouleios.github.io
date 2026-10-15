@@ -21,12 +21,12 @@ svg { display: block; }
 .skip-link { position: fixed; top: -100px; left: 16px; z-index: 10; padding: 16px; background: var(--ink); color: white; }
 .skip-link:focus { top: 12px; }
 .site-header { border-bottom: 1px solid var(--line); background: var(--paper); }
-.header-inner { max-width: 1440px; margin: auto; padding: 26px 40px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+.header-inner { max-width: 1800px; margin: auto; padding: 26px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .brand { display: flex; align-items: center; gap: 12px; flex-shrink: 0; font: bold 29px var(--serif); letter-spacing: -.8px; }
 .brand-logo { display: block; width: 60px; height: 80px; flex-shrink: 0; object-fit: cover; object-position: center; clip-path: ellipse(44% 45% at 50% 49%); }
 .brand-caption { display: block; margin-top: 6px; font: 8px Arial, sans-serif; letter-spacing: 1.7px; }
-nav { display: grid; grid-template-columns: repeat(4, auto); gap: 6px 22px; min-width: 0; }
-nav a { font-size: 12px; line-height: 1.6; padding-block: 7px; border-bottom: 1px solid transparent; }
+nav { display: flex; flex-wrap: nowrap; gap: 22px; min-width: 0; max-width: 100%; overflow-x: auto; padding: 6px; }
+nav a { flex-shrink: 0; white-space: nowrap; font-size: 12px; line-height: 1.6; padding-block: 7px; border-bottom: 1px solid transparent; }
 nav a:hover { color: var(--terracotta); border-color: var(--terracotta); }
 .hero { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 32px; padding-block: 64px 72px; }
 .eyebrow { font-size: 10px; font-weight: bold; letter-spacing: 2px; line-height: 1.8; }
@@ -96,7 +96,7 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 }
 @media (max-width: 1100px) {
   .header-inner { flex-direction: column; align-items: flex-start; padding: 22px 28px 16px; gap: 15px; }
-  nav { display: flex; flex-wrap: wrap; justify-content: flex-start; }
+  nav { width: 100%; }
   h1 { font-size: 53px; }
   .page-width { width: calc(100% - 64px); }
   .card { padding: 20px; }
