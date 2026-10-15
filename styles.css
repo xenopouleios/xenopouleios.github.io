@@ -23,9 +23,9 @@ svg { display: block; }
 .site-header { border-bottom: 1px solid var(--line); background: var(--paper); }
 .header-inner { max-width: 1440px; margin: auto; padding: 26px 40px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
 .brand { display: flex; align-items: center; gap: 12px; flex-shrink: 0; font: bold 29px var(--serif); letter-spacing: -.8px; }
-.brand svg { width: 43px; height: 43px; fill: none; stroke: var(--terracotta); stroke-width: 1.8; stroke-linejoin: round; }
+.brand-logo { display: block; width: 94px; height: auto; flex-shrink: 0; border-radius: 3px; }
 .brand-caption { display: block; margin-top: 6px; font: 8px Arial, sans-serif; letter-spacing: 1.7px; }
-nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px 26px; }
+nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px 22px; min-width: 0; }
 nav a { font-size: 12px; line-height: 1.6; padding-block: 7px; border-bottom: 1px solid transparent; }
 nav a:hover { color: var(--terracotta); border-color: var(--terracotta); }
 .hero { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 32px; padding-block: 64px 72px; }
@@ -89,8 +89,8 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
   h1 { font-size: 72px; }
 }
 @media (max-width: 1100px) {
-  .header-inner { flex-direction: column; padding: 22px 28px 16px; gap: 15px; }
-  nav { justify-content: center; }
+  .header-inner { flex-direction: column; align-items: flex-start; padding: 22px 28px 16px; gap: 15px; }
+  nav { justify-content: flex-start; }
   h1 { font-size: 53px; }
   .page-width { width: calc(100% - 64px); }
   .card { padding: 20px; }
@@ -101,8 +101,9 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
   html { scroll-padding-top: 24px; }
   .page-width { width: calc(100% - 40px); }
   .header-inner { padding-inline: 20px; }
-  nav { gap: 5px 18px; }
-  nav a { font-size: 11px; text-align: center; }
+  .brand-logo { width: 78px; }
+  nav { gap: 4px 16px; }
+  nav a { font-size: 12px; padding-block: 10px; }
   .hero { grid-template-columns: 1fr; padding-block: 44px; gap: 20px; }
   h1 { font-size: clamp(43px, 8.5vw, 64px); letter-spacing: -1.6px; }
   .hero-description { max-width: 530px; font-size: 14px; }
