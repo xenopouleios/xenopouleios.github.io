@@ -11,7 +11,8 @@ let demo = false;
 let active = "home";
 let userId = null;
 let busy = false;
-let recovery = new URLSearchParams(location.hash.slice(1)).get("type") === "recovery";
+const linkType = new URLSearchParams(location.hash.slice(1)).get("type");
+let recovery = linkType === "recovery" || linkType === "invite";
 const previewId = crypto.randomUUID();
 
 function message(text, kind = "") {
