@@ -1,6 +1,8 @@
 import { client, configured, loadContent, publishContent, uploadImage } from "./cms.js";
 import { emptyContent, homeFields, readDefaults, sectionFields, sections, validateContent, validateImage } from "./content.js";
 import logoUrl from "./logo.png";
+import { mountLibraryAdmin } from "./library-admin.js";
+import "./library.css";
 
 const $ = id => document.getElementById(id);
 let content = emptyContent();
@@ -11,6 +13,8 @@ let demo = false;
 let active = "home";
 let userId = null;
 let busy = false;
+let bookDirty = false;
+let disposeLibrary = null;
 const linkType = new URLSearchParams(location.hash.slice(1)).get("type");
 let recovery = linkType === "recovery" || linkType === "invite";
 const previewId = crypto.randomUUID();
@@ -24,7 +28,7 @@ function message(text, kind = "") {
 }
 
 function describeError(error) {
-  if (error.code === "40001") return "Κάποιος άλλος δημοσίευσε αλλαγές πριν από εσάς. Οι δικές σας αλλαγές παραμένουν εδώ, αλλά δεν δημοσιεύτηκαν. Μην κλείσετε τη σελίδα: κρατήστε αντίγραφο των κειμένων σας και ανανεώστε πριν δοκιμάσετε ξανά.";
+  if (error.code === "40001") return "Η εγγραφή άλλαξε από άλλο διαχειριστή. Οι δικές σας αλλαγές δεν αποθηκεύτηκαν. Κρατήστε αντίγραφο των στοιχείων σας και φορτώστε ξανά την εγγραφή πριν δοκιμάσετε ξανά.";
   if (error.code === "42501") return "Ο λογαριασμός σας δεν έχει δικαίωμα δημοσίευσης. Επικοινωνήστε με τον υπεύθυνο.";
   if (error.code === "invalid_credentials") return "Το email ή ο κωδικός δεν είναι σωστά. Ελέγξτε τα και δοκιμάστε ξανά.";
   if (error.code === "over_email_send_rate_limit" || error.status === 429) return "Έγιναν πολλές προσπάθειες. Περιμένετε λίγα λεπτά και δοκιμάστε ξανά.";
@@ -36,7 +40,9 @@ function describeError(error) {
 async function run(action) {
   if (busy) return;
   busy = true;
-  const controls = [...document.querySelectorAll("button, input, textarea, select")].map(element => [element, element.disabled]);
+  const controls = [...document.querySelectorAll("button, input, textarea, select")]
+    .filter(element => !element.closest("#confirm-dialog"))
+    .map(element => [element, element.disabled]);
   controls.forEach(([element]) => { element.disabled = true; });
   try {
     await action();
@@ -52,8 +58,10 @@ async function run(action) {
 
 function updateState() {
   $("publish").disabled = demo || !dirty || busy;
-  $("preview").disabled = busy;
-  $("save-state").textContent = demo ? "Δοκιμή μόνο — δεν γίνεται αποθήκευση." : dirty ? "Έχετε αλλαγές που δεν δημοσιεύτηκαν ακόμη." : "Δεν υπάρχουν αδημοσίευτες αλλαγές.";
+  $("preview").disabled = busy || bookDirty;
+  $("save-state").textContent = demo ? "Δοκιμή μόνο — δεν γίνεται αποθήκευση." : bookDirty
+    ? `Το βιβλίο δεν αποθηκεύτηκε ακόμη. Πατήστε «Αποθήκευση βιβλίου — δημόσια».${dirty ? " Υπάρχουν επίσης αδημοσίευτες αλλαγές στα κείμενα." : ""}`
+    : dirty ? "Έχετε αλλαγές που δεν δημοσιεύτηκαν ακόμη." : "Δεν υπάρχουν αδημοσίευτες αλλαγές.";
 }
 
 function changed() {
@@ -174,8 +182,8 @@ function showWorkspace() {
   $("account-label").textContent = demo ? "Γνωρίστε τη διαχείριση χωρίς να αλλάξει η ιστοσελίδα." : "Κάθε αλλαγή δημοσιεύεται μόνο όταν το επιλέξετε εσείς.";
   const buttons = $("section-buttons");
   buttons.replaceChildren();
-  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...sections]) {
-    const item = button(label, () => { active = id; renderEditor(); }, "section-button");
+  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...sections, ["books", "Βιβλία και έλεγχος καταλόγου"]]) {
+    const item = button(label, () => selectEditor(id), "section-button");
     item.dataset.section = id;
     buttons.append(item);
   }
@@ -183,11 +191,25 @@ function showWorkspace() {
   updateState();
 }
 
+async function selectEditor(id) {
+  if (busy) return;
+  if (bookDirty && !await confirmAction("Οι αλλαγές του βιβλίου δεν αποθηκεύτηκαν. Να αλλάξουμε ενότητα χωρίς αποθήκευση;", "Μη αποθηκευμένο βιβλίο")) return;
+  active = id;
+  renderEditor();
+}
+
 function renderEditor(focus = true) {
+  disposeLibrary?.();
+  disposeLibrary = null;
   const root = $("editor");
+  root.classList.remove("library-catalog");
   root.replaceChildren();
   document.querySelectorAll(".section-button").forEach(item => item.setAttribute("aria-current", String(item.dataset.section === active || (item.id === "posts-button" && active === "posts"))));
-  if (active === "posts") {
+  if (active === "books") {
+    $("editor-title").textContent = "Βιβλία και έλεγχος καταλόγου";
+    $("editor-help").textContent = "Αναζητήστε, διορθώστε ή προσθέστε βιβλία. Η αποθήκευση βιβλίου γίνεται με το δικό του κουμπί, όχι με τη «Δημοσίευση αλλαγών» στο κάτω μέρος.";
+    disposeLibrary = mountLibraryAdmin(root, { run, message, confirmAction, demo, setUnsaved: value => { bookDirty = value; updateState(); } });
+  } else if (active === "posts") {
     $("editor-title").textContent = "Αναρτήσεις και ανακοινώσεις";
     $("editor-help").textContent = "Προσθέστε νέα, εκδηλώσεις ή άρθρα και επιλέξτε σε ποια ενότητα θα εμφανιστούν.";
     renderPosts(root);
@@ -319,7 +341,7 @@ $("start-demo").addEventListener("click", () => run(async () => {
   await loadDefaults();
   showWorkspace();
 }));
-$("posts-button").addEventListener("click", () => { active = "posts"; renderEditor(); });
+$("posts-button").addEventListener("click", () => selectEditor("posts"));
 $("show-password").addEventListener("click", () => {
   const show = $("password").type === "password";
   $("password").type = show ? "text" : "password";
@@ -358,13 +380,14 @@ $("recovery-form").addEventListener("submit", event => {
   });
 });
 $("logout").addEventListener("click", async () => {
-  if (dirty && !await confirmAction("Υπάρχουν αλλαγές που δεν δημοσιεύτηκαν. Αν αποσυνδεθείτε θα χαθούν. Να συνεχίσουμε;", "Αποσύνδεση χωρίς δημοσίευση;")) return;
+  if ((dirty || bookDirty) && !await confirmAction("Υπάρχουν αλλαγές που δεν αποθηκεύτηκαν. Αν αποσυνδεθείτε θα χαθούν. Να συνεχίσουμε;", "Αποσύνδεση χωρίς αποθήκευση;")) return;
   run(async () => {
     if (!demo) {
       const { error } = await client.auth.signOut();
       if (error) throw error;
     }
     dirty = false;
+    bookDirty = false;
     userId = null;
     sessionStorage.removeItem(`xenopouleio-preview-${previewId}`);
     location.reload();
@@ -374,7 +397,7 @@ $("preview").addEventListener("click", () => {
   try {
     validateContent(content);
     sessionStorage.setItem(`xenopouleio-preview-${previewId}`, JSON.stringify(content));
-    const previewSection = active === "posts" ? $("post-section")?.value || content.posts[0]?.section || "nea" : active;
+    const previewSection = active === "books" ? "daneistiki" : active === "posts" ? $("post-section")?.value || content.posts[0]?.section || "nea" : active;
     const url = new URL(sections.some(([id]) => id === previewSection) ? `../${previewSection}.html` : "../", location.href);
     url.searchParams.set("preview", previewId);
     $("preview-frame").src = url.href;
@@ -395,7 +418,7 @@ $("publish").addEventListener("click", async () => {
   });
 });
 window.addEventListener("beforeunload", event => {
-  if (dirty) {
+  if (dirty || bookDirty) {
     event.preventDefault();
     event.returnValue = "";
   }

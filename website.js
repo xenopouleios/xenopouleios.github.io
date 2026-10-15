@@ -1,5 +1,7 @@
 import { configured, loadContent } from "./cms.js";
 import { allFields, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
+import { mountCatalog } from "./library.js";
+import "./library.css";
 
 const defaults = readDefaults(document);
 const previewId = new URL(location.href).searchParams.get("preview");
@@ -38,6 +40,13 @@ function updateTitle() {
   document.title = activePage ? `${document.querySelector(`#${activePage} h2`).textContent} — ${name}` : `${name} — Βιβλία, μνήμη, δημιουργία`;
 }
 updateTitle();
+
+if (activePage === "daneistiki") {
+  const catalog = document.createElement("div");
+  document.querySelector("#daneistiki h2").parentElement.append(catalog);
+  if (configured) mountCatalog(catalog);
+  else catalog.textContent = "Ο κατάλογος βιβλίων δεν έχει συνδεθεί ακόμη.";
+}
 
 export function renderContent(content) {
   validateContent(content);
