@@ -1,7 +1,43 @@
 import { configured, loadContent } from "./cms.js";
-import { allFields, readDefaults, safeImageUrl, validateContent } from "./content.js";
+import { allFields, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
 
 const defaults = readDefaults(document);
+const previewId = new URL(location.href).searchParams.get("preview");
+const requestedPage = location.pathname.split("/").pop().replace(/\.html$/, "");
+const activePage = sections.some(([id]) => id === requestedPage) ? requestedPage : null;
+if (activePage) document.body.dataset.page = activePage;
+
+function pageUrl(id = "") {
+  const url = new URL(id ? `./${id}.html` : "./", location.href);
+  if (previewId) url.searchParams.set("preview", previewId);
+  return url.href;
+}
+
+for (const [id] of sections) {
+  document.querySelectorAll(`a[data-section="${id}"]`).forEach(link => {
+    link.href = pageUrl(id);
+    if (activePage === id) link.setAttribute("aria-current", "page");
+  });
+}
+document.querySelectorAll(".brand, .footer-brand").forEach(link => { link.href = pageUrl(); });
+if (activePage) {
+  const section = document.getElementById(activePage);
+  section.classList.add("current-section");
+  section.querySelector("h2").setAttribute("role", "heading");
+  section.querySelector("h2").setAttribute("aria-level", "1");
+  const breadcrumb = document.createElement("a");
+  breadcrumb.href = pageUrl();
+  breadcrumb.className = "back-home";
+  breadcrumb.textContent = "← Επιστροφή στην αρχική";
+  document.querySelector(".details").prepend(breadcrumb);
+  document.querySelector('nav [aria-current="page"]').scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+
+function updateTitle() {
+  const name = document.querySelector(".brand-name").textContent;
+  document.title = activePage ? `${document.querySelector(`#${activePage} h2`).textContent} — ${name}` : `${name} — Βιβλία, μνήμη, δημιουργία`;
+}
+updateTitle();
 
 export function renderContent(content) {
   validateContent(content);
@@ -50,10 +86,9 @@ export function renderContent(content) {
     article.append(body);
     document.querySelector(`#${post.section} h2`).parentElement.append(article);
   }
-  if (content.fields["site-name"]) document.title = `${content.fields["site-name"]} — Βιβλία, μνήμη, δημιουργία`;
+  updateTitle();
 }
 
-const previewId = new URL(location.href).searchParams.get("preview");
 if (previewId) {
   try {
     const raw = sessionStorage.getItem(`xenopouleio-preview-${previewId}`);

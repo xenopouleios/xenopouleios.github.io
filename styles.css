@@ -28,6 +28,13 @@ svg { display: block; }
 nav { display: flex; flex-wrap: nowrap; gap: 22px; min-width: 0; max-width: 100%; overflow-x: auto; padding: 6px; }
 nav a { flex-shrink: 0; white-space: nowrap; font-size: 12px; line-height: 1.6; padding-block: 7px; border-bottom: 1px solid transparent; }
 nav a:hover { color: var(--terracotta); border-color: var(--terracotta); }
+nav a[aria-current="page"] { color: var(--terracotta); border-color: var(--terracotta); font-weight: bold; }
+.details { display: none; }
+body[data-page] .hero, body[data-page] .discover, body[data-page] .intro-band, body[data-page] .site-notice { display: none; }
+body[data-page] .details { display: block; min-height: 60vh; }
+body[data-page] .detail { display: none; }
+body[data-page] .detail.current-section { display: grid; }
+.back-home { display: inline-block; margin-top: 16px; padding-block: 12px; font-size: 14px; text-decoration: underline; text-underline-offset: 4px; }
 .hero { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 32px; padding-block: 64px 72px; }
 .eyebrow { font-size: 10px; font-weight: bold; letter-spacing: 2px; line-height: 1.8; }
 .hero .eyebrow { display: flex; align-items: center; gap: 11px; margin-bottom: 28px; }

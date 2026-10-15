@@ -30,7 +30,7 @@ export const homeFields = [
 
 export function sectionFields(id) {
   const fields = [
-    [`${id}-nav`, `nav a[href="#${id}"]`, "Όνομα στην επάνω μπάρα"],
+    [`${id}-nav`, `nav a[data-section="${id}"]`, "Όνομα στην επάνω μπάρα"],
     [`${id}-title`, `#${id} h2`, "Τίτλος ενότητας"],
     [`${id}-label`, `#${id} .detail-label`, "Μικρή επικεφαλίδα"],
     [`${id}-body`, `#${id} .detail-body`, "Κείμενο ενότητας"],
@@ -38,10 +38,10 @@ export function sectionFields(id) {
   ];
   if (["bibliothiki", "mouseio", "filoi", "freinet"].includes(id)) {
     fields.push(
-      [`${id}-card-title`, `.card[href="#${id}"] h3`, "Τίτλος κάρτας στην αρχική"],
-      [`${id}-card-body`, `.card[href="#${id}"] p`, "Περιγραφή κάρτας στην αρχική"],
-      [`${id}-card-label`, `.card[href="#${id}"] .card-number`, "Μικρή επικεφαλίδα κάρτας"],
-      [`${id}-card-link`, `.card[href="#${id}"] .card-link`, "Κείμενο συνδέσμου κάρτας"],
+      [`${id}-card-title`, `.card[data-section="${id}"] h3`, "Τίτλος κάρτας στην αρχική"],
+      [`${id}-card-body`, `.card[data-section="${id}"] p`, "Περιγραφή κάρτας στην αρχική"],
+      [`${id}-card-label`, `.card[data-section="${id}"] .card-number`, "Μικρή επικεφαλίδα κάρτας"],
+      [`${id}-card-link`, `.card[data-section="${id}"] .card-link`, "Κείμενο συνδέσμου κάρτας"],
     );
   }
   return fields;
@@ -94,6 +94,9 @@ export function validateContent(content) {
 
 export function readDefaults(document) {
   for (const [id] of sections) {
+    document.querySelectorAll(`a[href="#${id}"], a[href="./${id}.html"]`).forEach(link => {
+      link.dataset.section = id;
+    });
     const section = document.querySelector(`#${id}`);
     if (!section) throw new Error(`Δεν βρέθηκε η ενότητα: ${id}`);
     let body = section.querySelector(".detail-body") || section.querySelector("p:not(.coming)");

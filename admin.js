@@ -374,7 +374,8 @@ $("preview").addEventListener("click", () => {
   try {
     validateContent(content);
     sessionStorage.setItem(`xenopouleio-preview-${previewId}`, JSON.stringify(content));
-    const url = new URL("../", location.href);
+    const previewSection = active === "posts" ? $("post-section")?.value || content.posts[0]?.section || "nea" : active;
+    const url = new URL(sections.some(([id]) => id === previewSection) ? `../${previewSection}.html` : "../", location.href);
     url.searchParams.set("preview", previewId);
     $("preview-frame").src = url.href;
     $("preview-dialog").showModal();
