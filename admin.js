@@ -2,6 +2,7 @@ import { client, configured, loadContent, publishContent, uploadImage } from "./
 import { emptyContent, homeFields, readDefaults, sectionFields, sections, validateContent, validateImage } from "./content.js";
 import logoUrl from "./logo.png";
 import { mountLibraryAdmin } from "./library-admin.js";
+import { mountMembersAdmin } from "./members-admin.js";
 import "./library.css";
 
 const $ = id => document.getElementById(id);
@@ -15,6 +16,8 @@ let userId = null;
 let busy = false;
 let bookDirty = false;
 let disposeLibrary = null;
+let memberDirty = false;
+let disposeMembers = null;
 const linkType = new URLSearchParams(location.hash.slice(1)).get("type");
 let recovery = linkType === "recovery" || linkType === "invite";
 const previewId = crypto.randomUUID();
@@ -58,8 +61,10 @@ async function run(action) {
 
 function updateState() {
   $("publish").disabled = demo || !dirty || busy;
-  $("preview").disabled = busy || bookDirty;
-  $("save-state").textContent = demo ? "Δοκιμή μόνο — δεν γίνεται αποθήκευση." : bookDirty
+  $("preview").disabled = busy || bookDirty || active === "members";
+  $("save-state").textContent = demo ? "Δοκιμή μόνο — δεν γίνεται αποθήκευση." : memberDirty
+    ? `Το μέλος δεν αποθηκεύτηκε ακόμη. Πατήστε «Αποθήκευση μέλους — ιδιωτικά».${dirty ? " Υπάρχουν επίσης αδημοσίευτες αλλαγές στα κείμενα." : ""}`
+    : bookDirty
     ? `Το βιβλίο δεν αποθηκεύτηκε ακόμη. Πατήστε «Αποθήκευση βιβλίου — δημόσια».${dirty ? " Υπάρχουν επίσης αδημοσίευτες αλλαγές στα κείμενα." : ""}`
     : dirty ? "Έχετε αλλαγές που δεν δημοσιεύτηκαν ακόμη." : "Δεν υπάρχουν αδημοσίευτες αλλαγές.";
 }
@@ -182,7 +187,7 @@ function showWorkspace() {
   $("account-label").textContent = demo ? "Γνωρίστε τη διαχείριση χωρίς να αλλάξει η ιστοσελίδα." : "Κάθε αλλαγή δημοσιεύεται μόνο όταν το επιλέξετε εσείς.";
   const buttons = $("section-buttons");
   buttons.replaceChildren();
-  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...sections, ["books", "Βιβλία και έλεγχος καταλόγου"]]) {
+  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...sections, ["books", "Βιβλία και έλεγχος καταλόγου"], ["members", "Μέλη — ιδιωτικό μητρώο"]]) {
     const item = button(label, () => selectEditor(id), "section-button");
     item.dataset.section = id;
     buttons.append(item);
@@ -194,6 +199,7 @@ function showWorkspace() {
 async function selectEditor(id) {
   if (busy) return;
   if (bookDirty && !await confirmAction("Οι αλλαγές του βιβλίου δεν αποθηκεύτηκαν. Να αλλάξουμε ενότητα χωρίς αποθήκευση;", "Μη αποθηκευμένο βιβλίο")) return;
+  if (memberDirty && !await confirmAction("Οι αλλαγές του μέλους δεν αποθηκεύτηκαν. Να αλλάξουμε ενότητα χωρίς αποθήκευση;", "Μη αποθηκευμένο μέλος")) return;
   active = id;
   renderEditor();
 }
@@ -201,11 +207,17 @@ async function selectEditor(id) {
 function renderEditor(focus = true) {
   disposeLibrary?.();
   disposeLibrary = null;
+  disposeMembers?.();
+  disposeMembers = null;
   const root = $("editor");
   root.classList.remove("library-catalog");
   root.replaceChildren();
   document.querySelectorAll(".section-button").forEach(item => item.setAttribute("aria-current", String(item.dataset.section === active || (item.id === "posts-button" && active === "posts"))));
-  if (active === "books") {
+  if (active === "members") {
+    $("editor-title").textContent = "Μέλη — ιδιωτικό μητρώο";
+    $("editor-help").textContent = "Προσωπικά στοιχεία, ορατά μόνο στους διαχειριστές. Χρησιμοποιήστε την «Αποθήκευση μέλους — ιδιωτικά», όχι τη «Δημοσίευση αλλαγών».";
+    disposeMembers = mountMembersAdmin(root, { run, message, confirmAction, demo, setUnsaved: value => { memberDirty = value; updateState(); } });
+  } else if (active === "books") {
     $("editor-title").textContent = "Βιβλία και έλεγχος καταλόγου";
     $("editor-help").textContent = "Αναζητήστε, διορθώστε ή προσθέστε βιβλία. Η αποθήκευση βιβλίου γίνεται με το δικό του κουμπί, όχι με τη «Δημοσίευση αλλαγών» στο κάτω μέρος.";
     disposeLibrary = mountLibraryAdmin(root, { run, message, confirmAction, demo, setUnsaved: value => { bookDirty = value; updateState(); } });
@@ -229,6 +241,7 @@ function renderEditor(focus = true) {
     } else renderImage(root, active, "Φωτογραφία ενότητας");
   }
   if (focus) $("editor-title").focus();
+  updateState();
 }
 
 function renderPosts(root) {
@@ -380,7 +393,7 @@ $("recovery-form").addEventListener("submit", event => {
   });
 });
 $("logout").addEventListener("click", async () => {
-  if ((dirty || bookDirty) && !await confirmAction("Υπάρχουν αλλαγές που δεν αποθηκεύτηκαν. Αν αποσυνδεθείτε θα χαθούν. Να συνεχίσουμε;", "Αποσύνδεση χωρίς αποθήκευση;")) return;
+  if ((dirty || bookDirty || memberDirty) && !await confirmAction("Υπάρχουν αλλαγές που δεν αποθηκεύτηκαν. Αν αποσυνδεθείτε θα χαθούν. Να συνεχίσουμε;", "Αποσύνδεση χωρίς αποθήκευση;")) return;
   run(async () => {
     if (!demo) {
       const { error } = await client.auth.signOut();
@@ -388,12 +401,16 @@ $("logout").addEventListener("click", async () => {
     }
     dirty = false;
     bookDirty = false;
+    disposeMembers?.();
+    disposeMembers = null;
+    memberDirty = false;
     userId = null;
     sessionStorage.removeItem(`xenopouleio-preview-${previewId}`);
     location.reload();
   });
 });
 $("preview").addEventListener("click", () => {
+  if (active === "members") return;
   try {
     validateContent(content);
     sessionStorage.setItem(`xenopouleio-preview-${previewId}`, JSON.stringify(content));
@@ -418,10 +435,17 @@ $("publish").addEventListener("click", async () => {
   });
 });
 window.addEventListener("beforeunload", event => {
-  if (dirty || bookDirty) {
+  if (dirty || bookDirty || memberDirty) {
     event.preventDefault();
     event.returnValue = "";
   }
+});
+window.addEventListener("pagehide", () => {
+  disposeMembers?.();
+  disposeMembers = null;
+});
+window.addEventListener("pageshow", event => {
+  if (event.persisted && active === "members") renderEditor();
 });
 
 if (!configured) {
@@ -430,14 +454,20 @@ if (!configured) {
   $("login-panel").hidden = false;
   client.auth.onAuthStateChange((event, session) => {
     if (event === "PASSWORD_RECOVERY") {
+      disposeMembers?.();
+      disposeMembers = null;
+      if (active === "members") active = "home";
       recovery = true;
       $("login-panel").hidden = true;
       $("workspace").hidden = true;
       $("recovery-panel").hidden = false;
     } else if (event === "SIGNED_OUT") {
+      disposeMembers?.();
+      disposeMembers = null;
+      if (active === "members") active = "home";
       $("workspace").hidden = true;
       $("login-panel").hidden = false;
-      message("Έγινε αποσύνδεση. Αν είχατε αδημοσίευτες αλλαγές, παραμένουν μόνο σε αυτή την ανοιχτή καρτέλα.", "warning");
+      message("Έγινε αποσύνδεση. Τα στοιχεία μελών αφαιρέθηκαν από την οθόνη. Τυχόν αδημοσίευτα κείμενα παραμένουν μόνο σε αυτή την καρτέλα.", "warning");
     }
   });
   run(async () => {
