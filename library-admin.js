@@ -194,10 +194,12 @@ export function mountLibraryAdmin(root, { run, message, confirmAction, setUnsave
     status.id = "book-status";
     statusLabel.htmlFor = status.id;
     for (const [value, label] of Object.entries(bookStatuses)) {
+      if (value === "borrowed" && record.status !== "borrowed") continue;
       const option = node("option", label);
       option.value = value;
       status.append(option);
     }
+    if (record.status === "borrowed") status.disabled = true;
     status.value = formData.status;
     status.addEventListener("change", () => { formData.status = status.value; setChanged(true); });
     const actions = node("div", undefined, "actions");

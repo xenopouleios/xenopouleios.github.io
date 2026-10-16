@@ -4,7 +4,9 @@ import { validateContent, validateImage } from "./content.js";
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 export const configured = Boolean(url && key);
-export const client = configured ? createClient(url, key) : null;
+export const client = configured ? createClient(url, key, {
+  auth: { detectSessionInUrl: location.pathname.includes("/admin") },
+}) : null;
 
 export async function loadContent() {
   const { data, error } = await client.from("site_content").select("document, version").eq("id", 1).single();

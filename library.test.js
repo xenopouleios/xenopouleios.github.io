@@ -5,7 +5,9 @@ import { normalizeTitle, prepareCatalog, stagingTsv } from "./scripts/prepare-li
 
 test("book form validates exact field limits and exposes bibliographic fields only", () => {
   assert.throws(() => bookValues({ title: " " }));
-  assert.throws(() => bookValues({ title: "Βιβλίο", status: "available" }));
+  assert.throws(() => bookValues({ title: "Βιβλίο", status: "unknown" }));
+  assert.equal(bookValues({ title: "Βιβλίο", status: "available" }).status, "available");
+  assert.equal(bookValues({ title: "Βιβλίο", status: "borrowed" }).status, "borrowed");
   bookFields.forEach(([key], index) => {
     assert.doesNotThrow(() => bookValues({ title: "Τίτλος", [key]: "α".repeat(fieldLimits[index]) }));
     assert.throws(() => bookValues({ title: "Τίτλος", [key]: "α".repeat(fieldLimits[index] + 1) }));

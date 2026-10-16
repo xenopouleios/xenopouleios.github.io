@@ -1,6 +1,6 @@
 import { configured, loadContent } from "./cms.js";
 import { allFields, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
-import { mountCatalog } from "./library.js";
+import { mountMemberPortal } from "./member-portal.js";
 import "./library.css";
 
 const defaults = readDefaults(document);
@@ -44,7 +44,7 @@ updateTitle();
 if (activePage === "daneistiki") {
   const catalog = document.createElement("div");
   document.querySelector("#daneistiki h2").parentElement.append(catalog);
-  if (configured) mountCatalog(catalog);
+  if (configured) mountMemberPortal(catalog);
   else catalog.textContent = "Ο κατάλογος βιβλίων δεν έχει συνδεθεί ακόμη.";
 }
 

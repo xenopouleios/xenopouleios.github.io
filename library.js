@@ -15,9 +15,19 @@ export function node(tag, text, className) {
   return element;
 }
 
-export function bookCard(book) {
+export function bookCard(book, { requestLoan } = {}) {
   const article = node("article", undefined, "library-book");
-  article.append(node("h3", book.title));
+  const disclosure = node("details");
+  const summary = node("summary", undefined, "book-row");
+  for (const [key, label] of [["classification_code", "Ταξινομικός αριθμός"], ["title", "Τίτλος βιβλίου"], ["author", "Συγγραφέας"]]) {
+    const cell = node("span", book[key] || "—", `book-${key}`);
+    cell.title = `${label}: ${book[key] || "Δεν αναφέρεται"}`;
+    summary.append(cell);
+  }
+  const availability = node("span", bookStatuses[book.status], `library-availability availability-${book.status}`);
+  availability.title = bookStatuses[book.status];
+  summary.append(availability);
+  disclosure.append(summary);
   const details = node("dl");
   for (const [key, label] of bookFields.slice(1)) {
     if (!book[key]) continue;
@@ -29,14 +39,23 @@ export function bookCard(book) {
     } else value.textContent = book[key];
     details.append(node("dt", label), value);
   }
-  article.append(details, node("p", bookStatuses[book.status], "library-availability"));
+  details.append(node("dt", "Διαθεσιμότητα"), node("dd", bookStatuses[book.status], `availability-${book.status}`));
+  disclosure.append(details);
+  if (requestLoan) {
+    const request = node("button", "Αίτημα δανεισμού");
+    request.type = "button";
+    request.disabled = book.status !== "available";
+    request.addEventListener("click", () => requestLoan(book, request));
+    disclosure.append(request, node("p", "Το αίτημα δεν αποτελεί κράτηση. Ο δανεισμός επιβεβαιώνεται από τον διαχειριστή κατά την παράδοση."));
+  }
+  article.append(disclosure);
   return article;
 }
 
-export function mountCatalog(root) {
+export function mountCatalog(root, options = {}) {
   root.classList.add("library-catalog");
   root.append(node("h3", "Αναζήτηση στον κατάλογο βιβλίων"),
-    node("p", "Αναζητήστε με τίτλο, συγγραφέα, εκδότη ή αριθμό. Κάθε εγγραφή προέρχεται από τον κατάλογο της βιβλιοθήκης· η εμφάνισή της δεν σημαίνει ότι είναι διαθέσιμη για δανεισμό. Για επιβεβαίωση, επικοινωνήστε με τη βιβλιοθήκη."));
+    node("p", "Ανοίξτε το βελάκι για τα πλήρη στοιχεία. Πράσινο: διαθέσιμο · Κόκκινο: δανεισμένο. Όπου δεν έχει γίνει έλεγχος, η διαθεσιμότητα αναγράφεται ως μη επιβεβαιωμένη."));
   const form = node("form", undefined, "library-search");
   const label = node("label", "Τίτλος, συγγραφέας, εκδότης ή αριθμός");
   const input = node("input");
@@ -59,6 +78,7 @@ export function mountCatalog(root) {
   let page = 1;
   let term = "";
   let loading = false;
+  let disposed = false;
   async function load(targetPage) {
     if (loading) return;
     loading = true;
@@ -67,13 +87,15 @@ export function mountCatalog(root) {
     status.textContent = "Φόρτωση βιβλίων…";
     try {
       const data = await searchBooks(term, targetPage);
+      if (disposed) return;
       page = targetPage;
-      results.replaceChildren(...data.items.map(bookCard));
+      results.replaceChildren(...data.items.map(book => bookCard(book, options)));
       status.textContent = data.total === 1 ? "Βρέθηκε 1 εγγραφή." : data.total ? `Βρέθηκαν ${data.total.toLocaleString("el-GR")} εγγραφές.` : "Δεν βρέθηκαν βιβλία με αυτά τα στοιχεία.";
       pageLabel.textContent = data.total ? `Σελίδα ${page} από ${Math.ceil(data.total / 20)}` : "";
       previous.disabled = page <= 1;
       next.disabled = page * 20 >= data.total;
     } catch (error) {
+      if (disposed) return;
       console.error("Library search failed", error);
       results.replaceChildren();
       pageLabel.textContent = "";
@@ -93,4 +115,5 @@ export function mountCatalog(root) {
   previous.addEventListener("click", () => load(page - 1));
   next.addEventListener("click", () => load(page + 1));
   load(1);
+  return () => { disposed = true; root.replaceChildren(); };
 }

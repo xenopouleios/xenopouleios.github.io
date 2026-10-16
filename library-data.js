@@ -12,6 +12,8 @@ export const fieldLimits = [2000, 2000, 1000, 200, 500, 200, 200, 10000];
 export const bookStatuses = {
   unverified: "Η διαθεσιμότητα δεν έχει επιβεβαιωθεί",
   unavailable: "Εκτός δανεισμού",
+  available: "Διαθέσιμο",
+  borrowed: "Δανεισμένο",
 };
 
 export function bookValues(record) {

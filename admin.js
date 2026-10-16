@@ -3,6 +3,7 @@ import { emptyContent, homeFields, readDefaults, sectionFields, sections, valida
 import logoUrl from "./logo.png";
 import { mountLibraryAdmin } from "./library-admin.js";
 import { mountMembersAdmin } from "./members-admin.js";
+import { mountLendingAdmin } from "./lending-admin.js";
 import "./library.css";
 
 const $ = id => document.getElementById(id);
@@ -61,7 +62,7 @@ async function run(action) {
 
 function updateState() {
   $("publish").disabled = demo || !dirty || busy;
-  $("preview").disabled = busy || bookDirty || active === "members";
+  $("preview").disabled = busy || bookDirty || ["members", "lending"].includes(active);
   $("save-state").textContent = demo ? "Δοκιμή μόνο — δεν γίνεται αποθήκευση." : memberDirty
     ? `Το μέλος δεν αποθηκεύτηκε ακόμη. Πατήστε «Αποθήκευση μέλους — ιδιωτικά».${dirty ? " Υπάρχουν επίσης αδημοσίευτες αλλαγές στα κείμενα." : ""}`
     : bookDirty
@@ -187,7 +188,7 @@ function showWorkspace() {
   $("account-label").textContent = demo ? "Γνωρίστε τη διαχείριση χωρίς να αλλάξει η ιστοσελίδα." : "Κάθε αλλαγή δημοσιεύεται μόνο όταν το επιλέξετε εσείς.";
   const buttons = $("section-buttons");
   buttons.replaceChildren();
-  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...sections, ["books", "Βιβλία και έλεγχος καταλόγου"], ["members", "Μέλη — ιδιωτικό μητρώο"]]) {
+  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...sections, ["books", "Βιβλία και έλεγχος καταλόγου"], ["members", "Μέλη — ιδιωτικό μητρώο"], ["lending", "Εγγραφές και δανεισμοί"]]) {
     const item = button(label, () => selectEditor(id), "section-button");
     item.dataset.section = id;
     buttons.append(item);
@@ -213,7 +214,11 @@ function renderEditor(focus = true) {
   root.classList.remove("library-catalog");
   root.replaceChildren();
   document.querySelectorAll(".section-button").forEach(item => item.setAttribute("aria-current", String(item.dataset.section === active || (item.id === "posts-button" && active === "posts"))));
-  if (active === "members") {
+  if (active === "lending") {
+    $("editor-title").textContent = "Εγγραφές και δανεισμοί";
+    $("editor-help").textContent = "Οι ενέργειες αποθηκεύονται αμέσως και ιδιωτικά. Τα email έγκρισης αποστέλλονται χειροκίνητα από εσάς.";
+    disposeMembers = mountLendingAdmin(root, { run, message, confirmAction, demo });
+  } else if (active === "members") {
     $("editor-title").textContent = "Μέλη — ιδιωτικό μητρώο";
     $("editor-help").textContent = "Προσωπικά στοιχεία, ορατά μόνο στους διαχειριστές. Χρησιμοποιήστε την «Αποθήκευση μέλους — ιδιωτικά», όχι τη «Δημοσίευση αλλαγών».";
     disposeMembers = mountMembersAdmin(root, { run, message, confirmAction, demo, setUnsaved: value => { memberDirty = value; updateState(); } });
@@ -410,7 +415,7 @@ $("logout").addEventListener("click", async () => {
   });
 });
 $("preview").addEventListener("click", () => {
-  if (active === "members") return;
+  if (["members", "lending"].includes(active)) return;
   try {
     validateContent(content);
     sessionStorage.setItem(`xenopouleio-preview-${previewId}`, JSON.stringify(content));
@@ -445,7 +450,7 @@ window.addEventListener("pagehide", () => {
   disposeMembers = null;
 });
 window.addEventListener("pageshow", event => {
-  if (event.persisted && active === "members") renderEditor();
+  if (event.persisted && ["members", "lending"].includes(active)) renderEditor();
 });
 
 if (!configured) {
@@ -456,7 +461,7 @@ if (!configured) {
     if (event === "PASSWORD_RECOVERY") {
       disposeMembers?.();
       disposeMembers = null;
-      if (active === "members") active = "home";
+      if (["members", "lending"].includes(active)) active = "home";
       recovery = true;
       $("login-panel").hidden = true;
       $("workspace").hidden = true;
@@ -464,7 +469,7 @@ if (!configured) {
     } else if (event === "SIGNED_OUT") {
       disposeMembers?.();
       disposeMembers = null;
-      if (active === "members") active = "home";
+      if (["members", "lending"].includes(active)) active = "home";
       $("workspace").hidden = true;
       $("login-panel").hidden = false;
       message("Έγινε αποσύνδεση. Τα στοιχεία μελών αφαιρέθηκαν από την οθόνη. Τυχόν αδημοσίευτα κείμενα παραμένουν μόνο σε αυτή την καρτέλα.", "warning");
