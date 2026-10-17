@@ -6,6 +6,11 @@ import { sections } from "./content.js";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, import.meta.dirname, "VITE_");
+  const assetVersion = process.env.GITHUB_SHA?.slice(0, 12) || "local";
+  const versionAssets = html => html.replace(
+    /(assets\/(?:website|library|admin)\.(?:js|css))(?=["'])/g,
+    `$1?v=${assetVersion}`,
+  );
   validatePublicConfig(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_PUBLISHABLE_KEY);
   return {
     base: "./",
@@ -21,9 +26,11 @@ export default defineConfig(({ mode }) => {
       },
       async writeBundle() {
         const output = resolve(import.meta.dirname, "dist");
-        let html = await readFile(resolve(output, "index.html"), "utf8");
+        let html = versionAssets(await readFile(resolve(output, "index.html"), "utf8"));
         for (const [id] of sections) html = html.replaceAll(`href="#${id}"`, `href="./${id}.html"`);
         await writeFile(resolve(output, "index.html"), html);
+        const adminPath = resolve(output, "admin", "index.html");
+        await writeFile(adminPath, versionAssets(await readFile(adminPath, "utf8")));
         await Promise.all(sections.map(async ([id, title]) => {
           const page = html.replace("<body>", `<body data-page="${id}">`)
             .replace("<title>Ξενοπούλειο — Βιβλία, μνήμη, δημιουργία</title>", `<title>${title} — Ξενοπούλειο</title>`);
