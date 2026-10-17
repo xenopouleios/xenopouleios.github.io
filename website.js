@@ -360,25 +360,48 @@ export function renderContent(content) {
       continue;
     }
     const article = document.createElement("article");
-    article.className = "published-post";
+    const announcement = post.section === "nea";
+    article.className = announcement ? "published-post announcement-card" : "published-post";
     const time = document.createElement("time");
     time.dateTime = post.date;
     time.textContent = new Intl.DateTimeFormat("el-GR", { dateStyle: "long", timeZone: "UTC" }).format(new Date(post.date));
     const title = document.createElement("h3");
     title.textContent = post.title;
-    article.append(time, title);
+    if (announcement) article.append(title, time);
+    else article.append(time, title);
+    const content = announcement ? createNode("div", undefined, "announcement-content") : article;
     if (post.image) {
       const image = document.createElement("img");
       image.src = safeImageUrl(post.image);
       image.alt = post.alt;
       image.className = "content-image";
       image.loading = "lazy";
-      article.append(image);
+      content.append(image);
     }
     const body = document.createElement("p");
-    body.className = "content-text";
+    body.className = announcement ? "content-text announcement-body" : "content-text";
     body.textContent = post.body;
-    article.append(body);
+    if (announcement) {
+      const copy = createNode("div", undefined, "announcement-copy");
+      copy.append(body);
+      if (post.body.length > 240) {
+        body.classList.add("is-collapsed");
+        const more = createNode("button", "ΔΙΑΒΑΣΤΕ ΠΕΡΙΣΣΟΤΕΡΑ →", "announcement-more");
+        more.type = "button";
+        more.setAttribute("aria-expanded", "false");
+        more.addEventListener("click", () => {
+          const expanded = more.getAttribute("aria-expanded") === "true";
+          more.setAttribute("aria-expanded", String(!expanded));
+          more.textContent = expanded ? "ΔΙΑΒΑΣΤΕ ΠΕΡΙΣΣΟΤΕΡΑ →" : "ΛΙΓΟΤΕΡΑ ↑";
+          body.classList.toggle("is-collapsed", expanded);
+        });
+        copy.append(more);
+      }
+      content.append(copy);
+      article.append(content);
+    } else {
+      article.append(body);
+    }
     document.querySelector(`#${post.section} h2`).parentElement.append(article);
   }
   renderActivityDetail(content.posts);
