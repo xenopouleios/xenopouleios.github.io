@@ -11,6 +11,10 @@ export default defineConfig(({ mode }) => {
     /(assets\/(?:website|library|admin)\.(?:js|css))(?=["'])/g,
     `$1?v=${assetVersion}`,
   );
+  const versionJavaScriptImports = source => source.replace(
+    /(\.\/(?:website|library|admin)\.js)(?=["'])/g,
+    `$1?v=${assetVersion}`,
+  );
   validatePublicConfig(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_PUBLISHABLE_KEY);
   return {
     base: "./",
@@ -26,6 +30,10 @@ export default defineConfig(({ mode }) => {
       },
       async writeBundle() {
         const output = resolve(import.meta.dirname, "dist");
+        await Promise.all(["website.js", "library.js", "admin.js"].map(async name => {
+          const path = resolve(output, "assets", name);
+          await writeFile(path, versionJavaScriptImports(await readFile(path, "utf8")));
+        }));
         let html = versionAssets(await readFile(resolve(output, "index.html"), "utf8"));
         for (const [id] of sections) html = html.replaceAll(`href="#${id}"`, `href="./${id}.html"`);
         await writeFile(resolve(output, "index.html"), html);
