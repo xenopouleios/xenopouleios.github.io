@@ -20,6 +20,8 @@ svg { display: block; }
 .page-width { width: min(1240px, calc(100% - 96px)); margin-inline: auto; }
 .skip-link { position: fixed; top: -100px; left: 16px; z-index: 10; padding: 16px; background: var(--ink); color: white; }
 .skip-link:focus { top: 12px; }
+.scroll-reveal { opacity: 0; translate: 0 18px; transition: opacity .65s ease, translate .65s cubic-bezier(.22, 1, .36, 1); transition-delay: var(--reveal-delay, 0ms); }
+.scroll-reveal.is-visible { opacity: 1; translate: 0 0; }
 .site-header { border-bottom: 1px solid var(--line); background: var(--paper); }
 .header-inner { max-width: 1800px; margin: auto; padding: 26px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .brand { display: flex; align-items: center; gap: 15px; flex-shrink: 0; font: bold 34px var(--serif); letter-spacing: -.8px; }
@@ -239,6 +241,9 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
   .cards { grid-template-columns: 1fr; }
   .activity-cards { grid-template-columns: 1fr; }
   .card-icon { margin-block: 20px 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal { opacity: 1; translate: none; transition: none; }
   .eyebrow { font-size: 9px; letter-spacing: 1.3px; }
   .footer-grid { grid-template-columns: 1fr; }
   .footer-brand { grid-column: auto; }

@@ -47,6 +47,42 @@ window.addEventListener("resize", () => {
   if (window.innerWidth > 760) setMobileMenuOpen(false);
 });
 
+const revealObserver = !window.matchMedia("(prefers-reduced-motion: reduce)").matches && "IntersectionObserver" in window
+  ? new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add("is-visible");
+        revealObserver.unobserve(entry.target);
+      }
+    }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" })
+  : null;
+
+function observeScrollReveals() {
+  const groups = [
+    ".hero > *",
+    ".discover .section-heading > *",
+    ".cards > .card",
+    ".intro-band > .page-width > *",
+    ".detail.current-section > *",
+    ".activity-cards > .activity-card",
+    ".activity-detail > *",
+    ".published-post",
+    ".site-notice > *",
+    ".footer-support",
+    ".footer-grid > *",
+    ".footer-bottom > *",
+  ];
+  for (const selector of groups) {
+    document.querySelectorAll(selector).forEach((element, index) => {
+      if (element.classList.contains("scroll-reveal")) return;
+      element.classList.add("scroll-reveal");
+      element.style.setProperty("--reveal-delay", `${Math.min(index, 3) * 90}ms`);
+      if (revealObserver) revealObserver.observe(element);
+      else element.classList.add("is-visible");
+    });
+  }
+}
+
 function pageUrl(id = "") {
   const url = new URL(id ? `./${id}.html` : "./", location.href);
   if (previewId) url.searchParams.set("preview", previewId);
@@ -346,6 +382,7 @@ export function renderContent(content) {
     document.querySelector(`#${post.section} h2`).parentElement.append(article);
   }
   renderActivityDetail(content.posts);
+  observeScrollReveals();
   updateTitle();
 }
 
@@ -375,3 +412,5 @@ function showError(message) {
   banner.textContent = message;
   document.body.prepend(banner);
 }
+
+observeScrollReveals();
