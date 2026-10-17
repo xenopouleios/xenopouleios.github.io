@@ -79,6 +79,15 @@ test("legacy additional updates are merged into the single section text", () => 
   assert.equal(normalizeContent(noteOnly, { "bibliothiki-body": "Αρχικό κείμενο" }).fields["bibliothiki-body"], "Αρχικό κείμενο\n\nΔεύτερο κείμενο");
 });
 
+test("legacy section headings are discarded in favor of optional images", () => {
+  const content = emptyContent();
+  content.fields["mouseio-label"] = "02 / ΜΝΗΜΗ";
+  assert.doesNotThrow(() => validateContent(content));
+  const normalized = normalizeContent(content);
+  assert.equal(Object.hasOwn(normalized.fields, "mouseio-label"), false);
+  assert.equal(allFields.some(([id]) => id.endsWith("-label") && sections.some(([section]) => id === `${section}-label`)), false);
+});
+
 test("images must use HTTPS and known slots", () => {
   for (const url of ["javascript:alert(1)", "data:image/svg+xml,test", "http://example.com/photo.jpg", "//example.com/photo.jpg"]) assert.throws(() => safeImageUrl(url));
   assert.equal(safeImageUrl(""), "");

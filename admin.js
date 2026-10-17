@@ -250,7 +250,7 @@ function renderEditor(focus = true) {
     if (active === "home") {
       renderImage(root, "logo", "Λογότυπο πάνω αριστερά", logoUrl);
       renderImage(root, "hero", "Κεντρική εικόνα της αρχικής");
-    } else renderImage(root, active, "Φωτογραφία ενότητας");
+    } else renderImage(root, active, "Προαιρετική φωτογραφία στην αριστερή θέση της ενότητας");
   }
   if (focus) $("editor-title").focus();
   updateState();

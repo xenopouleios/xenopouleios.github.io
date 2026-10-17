@@ -284,7 +284,7 @@ export function renderContent(content) {
     } else {
       img.className = "content-image";
       if (id === "hero") document.querySelector(".library-art").replaceWith(img);
-      else document.querySelector(`#${id} h2`).after(img);
+      else document.querySelector(`#${id} .detail-media`).append(img);
     }
   }
   const activityGrids = new Map();

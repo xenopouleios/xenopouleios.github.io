@@ -50,7 +50,6 @@ export function sectionFields(id) {
   const fields = [
     [`${id}-nav`, `nav a[data-section="${id}"]`, "Όνομα στην επάνω μπάρα"],
     [`${id}-title`, `#${id} h2`, "Τίτλος ενότητας"],
-    [`${id}-label`, `#${id} .detail-label`, "Μικρή επικεφαλίδα"],
     [`${id}-body`, `#${id} .detail-body`, "Κείμενο ενότητας"],
   ];
   if (["bibliothiki", "mouseio", "filoi", "freinet"].includes(id)) {
@@ -67,6 +66,7 @@ export function sectionFields(id) {
 export const allFields = [...homeFields, ...sections.flatMap(([id]) => sectionFields(id))];
 const legacyContactSections = ["topothesia", "forma-epikoinonias"];
 const legacyNoteIds = [...sections.map(([id]) => `${id}-note`), ...legacyContactSections.map(id => `${id}-note`)];
+const legacySectionLabelIds = [...sections.map(([id]) => `${id}-label`), ...legacyContactSections.map(id => `${id}-label`)];
 const legacyContactDefaults = new Set([
   "Τα στοιχεία επικοινωνίας θα προστεθούν μόλις επιβεβαιωθούν από τους υπευθύνους.",
   "Η διεύθυνση και οι πληροφορίες πρόσβασης στο Ξενοπούλειο θα παρουσιαστούν εδώ.",
@@ -104,7 +104,7 @@ export function validateContent(content) {
   if (!content || typeof content !== "object" || Array.isArray(content)) throw new Error("Μη έγκυρο περιεχόμενο.");
   if (!content.fields || !content.images || !Array.isArray(content.posts)) throw new Error("Λείπουν στοιχεία περιεχομένου.");
   if (typeof content.fields !== "object" || Array.isArray(content.fields) || typeof content.images !== "object" || Array.isArray(content.images)) throw new Error("Μη έγκυρα πεδία περιεχομένου.");
-  const fieldIds = new Set([...allFields.map(([id]) => id), ...legacyContactSections.flatMap(id => sectionFields(id).map(([fieldId]) => fieldId)), ...legacyNoteIds]);
+  const fieldIds = new Set([...allFields.map(([id]) => id), ...legacyContactSections.flatMap(id => sectionFields(id).map(([fieldId]) => fieldId)), ...legacyNoteIds, ...legacySectionLabelIds]);
   for (const [id, value] of Object.entries(content.fields)) {
     if (!fieldIds.has(id) || typeof value !== "string" || value.length > 20000) throw new Error("Μη έγκυρο πεδίο κειμένου.");
   }
@@ -144,6 +144,7 @@ export function normalizeContent(content, defaults = {}) {
     if (note) normalized.fields[bodyId] = body ? `${bodyValue}\n\n${normalized.fields[noteId]}` : normalized.fields[noteId];
     delete normalized.fields[noteId];
   }
+  for (const id of legacySectionLabelIds) delete normalized.fields[id];
   const storedContactBody = normalized.fields["epikoinonia-body"]?.trim();
   const contactParts = [storedContactBody && !legacyContactDefaults.has(storedContactBody) ? normalized.fields["epikoinonia-body"] : defaults["epikoinonia-body"] ?? ""].filter(Boolean);
   for (const id of legacyContactSections) {
