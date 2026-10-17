@@ -1,9 +1,10 @@
 import { client, configured, loadContent, publishContent, uploadImage } from "./cms.js";
-import { emptyContent, homeFields, normalizeContent, readDefaults, sectionFields, sections, validateContent, validateImage } from "./content.js";
+import { activitySections, emptyContent, homeFields, normalizeContent, readDefaults, sectionFields, sections, validateContent, validateImage } from "./content.js";
 import logoUrl from "./logo.png";
 import { mountLibraryAdmin } from "./library-admin.js";
 import { mountMembersAdmin } from "./members-admin.js";
 import { mountLendingAdmin } from "./lending-admin.js";
+import { mountActivityAdmin } from "./activity-admin.js";
 import "./library.css";
 
 const $ = id => document.getElementById(id);
@@ -22,6 +23,7 @@ let disposeMembers = null;
 const linkType = new URLSearchParams(location.hash.slice(1)).get("type");
 let recovery = linkType === "recovery" || linkType === "invite";
 const previewId = crypto.randomUUID();
+const activityRegistrationsEnabled = import.meta.env.VITE_ACTIVITY_REGISTRATIONS_ENABLED === "true";
 
 function message(text, kind = "") {
   $("status").textContent = text;
@@ -62,7 +64,7 @@ async function run(action) {
 
 function updateState() {
   $("publish").disabled = demo || !dirty || busy;
-  $("preview").disabled = busy || bookDirty || ["members", "lending"].includes(active);
+  $("preview").disabled = busy || bookDirty || ["members", "lending", "activity-registrations"].includes(active);
   $("save-state").textContent = demo ? "Δοκιμή μόνο — δεν γίνεται αποθήκευση." : memberDirty
     ? `Το μέλος δεν αποθηκεύτηκε ακόμη. Πατήστε «Αποθήκευση μέλους — ιδιωτικά».${dirty ? " Υπάρχουν επίσης αδημοσίευτες αλλαγές στα κείμενα." : ""}`
     : bookDirty
@@ -188,7 +190,7 @@ function showWorkspace() {
   $("account-label").textContent = demo ? "Γνωρίστε τη διαχείριση χωρίς να αλλάξει η ιστοσελίδα." : "Κάθε αλλαγή δημοσιεύεται μόνο όταν το επιλέξετε εσείς.";
   const buttons = $("section-buttons");
   buttons.replaceChildren();
-  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...sections, ["books", "Βιβλία και έλεγχος καταλόγου"], ["members", "Μέλη — ιδιωτικό μητρώο"], ["lending", "Εγγραφές και δανεισμοί"]]) {
+  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...sections, ["books", "Βιβλία και έλεγχος καταλόγου"], ["members", "Μέλη — ιδιωτικό μητρώο"], ["lending", "Εγγραφές και δανεισμοί"], ["activity-registrations", "Δηλώσεις δράσεων — ιδιωτικά"]]) {
     const item = button(label, () => selectEditor(id), "section-button");
     item.dataset.section = id;
     buttons.append(item);
@@ -214,7 +216,12 @@ function renderEditor(focus = true) {
   root.classList.remove("library-catalog");
   root.replaceChildren();
   document.querySelectorAll(".section-button").forEach(item => item.setAttribute("aria-current", String(item.dataset.section === active || (item.id === "posts-button" && active === "posts"))));
-  if (active === "lending") {
+  if (active === "activity-registrations") {
+    $("editor-title").textContent = "Δηλώσεις συμμετοχής σε δράσεις";
+    $("editor-help").textContent = "Προσωπικά στοιχεία, ορατά μόνο στους διαχειριστές. Διαγράψτε τα όταν δεν είναι πλέον απαραίτητα για τη δράση.";
+    if (activityRegistrationsEnabled) disposeMembers = mountActivityAdmin(root, { run, message, confirmAction, demo });
+    else root.append(element("p", "Η ιδιωτική βάση δηλώσεων δεν έχει ενεργοποιηθεί ακόμη."));
+  } else if (active === "lending") {
     $("editor-title").textContent = "Εγγραφές και δανεισμοί";
     $("editor-help").textContent = "Οι ενέργειες αποθηκεύονται αμέσως και ιδιωτικά. Τα email έγκρισης αποστέλλονται χειροκίνητα από εσάς.";
     disposeMembers = mountLendingAdmin(root, { run, message, confirmAction, demo });
@@ -294,11 +301,34 @@ function editPost(post, root) {
     select.append(option);
   }
   select.value = post.section;
-  select.addEventListener("change", () => { post.section = select.value; changed(); });
+  select.addEventListener("change", () => {
+    post.section = select.value;
+    if (activitySections.has(post.section)) {
+      post.summary ??= "";
+      post.registration_open ??= false;
+    } else {
+      delete post.summary;
+      delete post.registration_open;
+    }
+    changed();
+    editPost(post, root);
+  });
   form.append(label, select);
   field(form, "post-title", "Τίτλος ανάρτησης", post.title, value => { post.title = value; }, { maxLength: 300, required: true });
   field(form, "post-date", "Ημερομηνία", post.date, value => { post.date = value; }, { type: "date", required: true });
-  field(form, "post-body", "Κείμενο ανάρτησης", post.body, value => { post.body = value; }, { multiline: true, maxLength: 50000, required: true });
+  if (activitySections.has(post.section)) {
+    field(form, "post-summary", "Λίγα λόγια για την κάρτα της δράσης", post.summary ?? "", value => { post.summary = value; }, { multiline: true, maxLength: 500, required: true });
+  }
+  field(form, "post-body", activitySections.has(post.section) ? "Αναλυτικό κείμενο δράσης" : "Κείμενο ανάρτησης", post.body, value => { post.body = value; }, { multiline: true, maxLength: 50000, required: true });
+  if (activitySections.has(post.section)) {
+    const registrationLabel = element("label", undefined, "checkbox-field");
+    const registration = element("input");
+    registration.type = "checkbox";
+    registration.checked = post.registration_open === true;
+    registration.addEventListener("change", () => { post.registration_open = registration.checked; changed(); });
+    registrationLabel.append(registration, document.createTextNode(" Οι δηλώσεις συμμετοχής είναι ανοικτές"));
+    form.append(registrationLabel, element("p", "Αν το αποεπιλέξετε, η δράση θα παραμένει δημοσιευμένη αλλά η φόρμα συμμετοχής δεν θα εμφανίζεται.", "hint"));
+  }
   if (post.image) {
     const image = element("img", undefined, "post-image");
     image.src = post.image;
@@ -415,7 +445,7 @@ $("logout").addEventListener("click", async () => {
   });
 });
 $("preview").addEventListener("click", () => {
-  if (["members", "lending"].includes(active)) return;
+  if (["members", "lending", "activity-registrations"].includes(active)) return;
   try {
     validateContent(content);
     sessionStorage.setItem(`xenopouleio-preview-${previewId}`, JSON.stringify(content));
@@ -450,7 +480,7 @@ window.addEventListener("pagehide", () => {
   disposeMembers = null;
 });
 window.addEventListener("pageshow", event => {
-  if (event.persisted && ["members", "lending"].includes(active)) renderEditor();
+  if (event.persisted && ["members", "lending", "activity-registrations"].includes(active)) renderEditor();
 });
 
 if (!configured) {
@@ -461,7 +491,7 @@ if (!configured) {
     if (event === "PASSWORD_RECOVERY") {
       disposeMembers?.();
       disposeMembers = null;
-      if (["members", "lending"].includes(active)) active = "home";
+      if (["members", "lending", "activity-registrations"].includes(active)) active = "home";
       recovery = true;
       $("login-panel").hidden = true;
       $("workspace").hidden = true;
@@ -469,7 +499,7 @@ if (!configured) {
     } else if (event === "SIGNED_OUT") {
       disposeMembers?.();
       disposeMembers = null;
-      if (["members", "lending"].includes(active)) active = "home";
+      if (["members", "lending", "activity-registrations"].includes(active)) active = "home";
       $("workspace").hidden = true;
       $("login-panel").hidden = false;
       message("Έγινε αποσύνδεση. Τα στοιχεία μελών αφαιρέθηκαν από την οθόνη. Τυχόν αδημοσίευτα κείμενα παραμένουν μόνο σε αυτή την καρτέλα.", "warning");

@@ -38,6 +38,7 @@ jobs:
           VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
           VITE_CONTACT_EMAIL_ENABLED: ${{ vars.CONTACT_EMAIL_ENABLED }}
+          VITE_ACTIVITY_REGISTRATIONS_ENABLED: ${{ vars.ACTIVITY_REGISTRATIONS_ENABLED }}
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload website

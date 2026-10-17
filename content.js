@@ -25,6 +25,7 @@ export const navigation = [
   ["Νέα - Ανακοινώσεις", [["nea", "Ενημερώσεις"], ["stigmes-draseon", "Στιγμές από προηγούμενες δράσεις"]]],
   ["Επικοινωνία", "epikoinonia"],
 ];
+export const activitySections = new Set(["draseis-paidia", "draseis-enilikes"]);
 
 export const homeFields = [
   ["site-name", ".brand-name", "Όνομα ιστοσελίδας"],
@@ -117,9 +118,13 @@ export function validateContent(content) {
   for (const post of content.posts) {
     if (!post || typeof post.id !== "string" || ids.has(post.id) || ![...sections.map(([id]) => id), ...legacyContactSections].includes(post.section)) throw new Error("Μη έγκυρη ανάρτηση.");
     ids.add(post.id);
+    const allowedPostFields = new Set(["id", "section", "title", "body", "date", "image", "alt", "summary", "registration_open"]);
+    if (Object.keys(post).some(key => !allowedPostFields.has(key))) throw new Error("Μη έγκυρο πεδίο ανάρτησης.");
     if (typeof post.title !== "string" || !post.title.trim() || post.title.length > 300 || typeof post.body !== "string" || !post.body.trim() || post.body.length > 50000 || typeof post.alt !== "string" || post.alt.length > 500) throw new Error("Συμπληρώστε τίτλο και κείμενο στην ανάρτηση.");
     if (typeof post.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(post.date) || !Number.isFinite(Date.parse(post.date)) || new Date(post.date).toISOString().slice(0, 10) !== post.date) throw new Error("Μη έγκυρη ημερομηνία.");
     if (typeof post.image !== "string") throw new Error("Μη έγκυρη φωτογραφία ανάρτησης.");
+    if (post.summary !== undefined && (!activitySections.has(post.section) || typeof post.summary !== "string" || !post.summary.trim() || post.summary.length > 500)) throw new Error("Μη έγκυρη σύντομη περιγραφή δράσης.");
+    if (post.registration_open !== undefined && (!activitySections.has(post.section) || typeof post.registration_open !== "boolean")) throw new Error("Μη έγκυρη κατάσταση συμμετοχών.");
     safeImageUrl(post.image);
   }
   return content;
@@ -150,7 +155,15 @@ export function normalizeContent(content, defaults = {}) {
     delete normalized.images[id];
   }
   if (contactParts.length) normalized.fields["epikoinonia-body"] = contactParts.join("\n\n");
-  normalized.posts = normalized.posts.map(post => legacyContactSections.includes(post.section) ? { ...post, section: "epikoinonia" } : post);
+  normalized.posts = normalized.posts.map(post => {
+    if (legacyContactSections.includes(post.section)) return { ...post, section: "epikoinonia" };
+    if (!activitySections.has(post.section)) return post;
+    return {
+      ...post,
+      summary: post.summary ?? post.body.replace(/\s+/g, " ").trim().slice(0, 240),
+      registration_open: post.registration_open === true,
+    };
+  });
   return normalized;
 }
 

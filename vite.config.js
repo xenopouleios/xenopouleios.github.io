@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
         server.middlewares.use((request, response, next) => {
           const url = new URL(request.url, "http://localhost");
           const id = url.pathname.split("/").pop().replace(/\.html$/, "");
-          if (sections.some(([section]) => section === id)) request.url = `/index.html${url.search}`;
+          if (id === "drastiriotita" || sections.some(([section]) => section === id)) request.url = `/index.html${url.search}`;
           next();
         });
       },
@@ -37,6 +37,8 @@ export default defineConfig(({ mode }) => {
         let html = versionAssets(await readFile(resolve(output, "index.html"), "utf8"));
         for (const [id] of sections) html = html.replaceAll(`href="#${id}"`, `href="./${id}.html"`);
         await writeFile(resolve(output, "index.html"), html);
+        await writeFile(resolve(output, "drastiriotita.html"), html.replace("<body>", '<body data-activity-detail="">')
+          .replace("<title>Ξενοπούλειο — Βιβλία, μνήμη, δημιουργία</title>", "<title>Δράση — Ξενοπούλειο</title>"));
         const adminPath = resolve(output, "admin", "index.html");
         await writeFile(adminPath, versionAssets(await readFile(adminPath, "utf8")));
         await Promise.all(sections.map(async ([id, title]) => {

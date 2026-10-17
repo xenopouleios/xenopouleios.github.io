@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { allFields, emptyContent, maxImageBytes, navigation, normalizeContent, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
+import { activitySections, allFields, emptyContent, maxImageBytes, navigation, normalizeContent, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
 import { validatePublicConfig } from "./config.js";
 
 const post = () => ({ id: "test-1", section: "nea", title: "Νέα ανακοίνωση", body: "Το κείμενό μας.", date: "2026-10-15", image: "", alt: "" });
@@ -30,6 +30,26 @@ test("legacy contact pages are merged into the single contact page", () => {
   assert.equal(normalized.fields["epikoinonia-body"], "Κύριο κείμενο\n\nΟδηγίες πρόσβασης\n\nΠαλαιό κείμενο φόρμας");
   assert.equal(Object.hasOwn(normalized.fields, "topothesia-body"), false);
   assert.equal(normalized.posts[0].section, "epikoinonia");
+});
+
+test("activity posts support card summaries and controlled registration", () => {
+  const activity = {
+    ...post(),
+    section: "draseis-paidia",
+    summary: "Μια σύντομη παρουσίαση της δράσης.",
+    registration_open: true,
+  };
+  const content = emptyContent();
+  content.posts = [activity];
+  assert.equal(validateContent(content), content);
+  assert.deepEqual(activitySections, new Set(["draseis-paidia", "draseis-enilikes"]));
+  const legacy = emptyContent();
+  legacy.posts = [{ ...post(), section: "draseis-enilikes", body: "Αναλυτικό κείμενο παλιότερης δράσης." }];
+  const normalized = normalizeContent(legacy);
+  assert.equal(normalized.posts[0].summary, "Αναλυτικό κείμενο παλιότερης δράσης.");
+  assert.equal(normalized.posts[0].registration_open, false);
+  assert.throws(() => validateContent({ ...content, posts: [{ ...activity, summary: "" }] }));
+  assert.throws(() => validateContent({ ...content, posts: [{ ...activity, registration_open: "yes" }] }));
 });
 
 test("malformed documents and unknown fields are rejected", () => {

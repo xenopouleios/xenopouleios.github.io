@@ -1,13 +1,16 @@
 import { client, configured, loadContent } from "./cms.js";
-import { allFields, normalizeContent, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
+import { activitySections, allFields, normalizeContent, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
 import { mountMemberPortal } from "./member-portal.js";
 import "./library.css";
 
 const defaults = readDefaults(document);
 const previewId = new URL(location.href).searchParams.get("preview");
+const activityRegistrationsEnabled = import.meta.env.VITE_ACTIVITY_REGISTRATIONS_ENABLED === "true";
 const requestedPage = location.pathname.split("/").pop().replace(/\.html$/, "");
+const activityPage = requestedPage === "drastiriotita";
 const activePage = sections.some(([id]) => id === requestedPage) ? requestedPage : null;
 if (activePage) document.body.dataset.page = activePage;
+if (activityPage) document.body.dataset.activityDetail = "";
 const header = document.querySelector(".header-inner");
 const menuToggle = document.querySelector(".menu-toggle");
 const navigationGroups = [...document.querySelectorAll(".nav-group")];
@@ -50,6 +53,13 @@ function pageUrl(id = "") {
   return url.href;
 }
 
+function activityUrl(id) {
+  const url = new URL("./drastiriotita.html", location.href);
+  url.searchParams.set("id", id);
+  if (previewId) url.searchParams.set("preview", previewId);
+  return url.href;
+}
+
 for (const [id] of sections) {
   document.querySelectorAll(`a[data-section="${id}"]`).forEach(link => {
     link.href = pageUrl(id);
@@ -73,7 +83,7 @@ if (activePage) {
 
 function updateTitle() {
   const name = document.querySelector(".brand-name").textContent;
-  document.title = activePage ? `${document.querySelector(`#${activePage} h2`).textContent} — ${name}` : `${name} — Βιβλία, μνήμη, δημιουργία`;
+  if (!activityPage) document.title = activePage ? `${document.querySelector(`#${activePage} h2`).textContent} — ${name}` : `${name} — Βιβλία, μνήμη, δημιουργία`;
 }
 updateTitle();
 
@@ -87,6 +97,105 @@ if (activePage === "daneistiki") {
 if (activePage === "epikoinonia") {
   const map = document.querySelector(".contact-map iframe");
   map.src = map.dataset.src;
+}
+
+function createNode(tag, text, className) {
+  const node = document.createElement(tag);
+  if (text !== undefined) node.textContent = text;
+  if (className) node.className = className;
+  return node;
+}
+
+function activityRegistrationForm(post) {
+  const childActivity = post.section === "draseis-paidia";
+  const section = createNode("section", undefined, "activity-registration");
+  section.setAttribute("aria-labelledby", "registration-title");
+  const title = createNode("h2", "Δήλωση συμμετοχής");
+  title.id = "registration-title";
+  section.append(title);
+  if (!post.registration_open) {
+    section.append(createNode("p", "Οι δηλώσεις συμμετοχής για αυτή τη δράση είναι κλειστές."));
+    return section;
+  }
+  if (!activityRegistrationsEnabled && !previewId) {
+    section.append(createNode("p", "Η ηλεκτρονική δήλωση συμμετοχής θα ενεργοποιηθεί σύντομα."));
+    return section;
+  }
+  const form = createNode("form", undefined, "activity-registration-form");
+  const fields = childActivity
+    ? [["child_name", "Ονοματεπώνυμο παιδιού", "name"], ["guardian_name", "Ονοματεπώνυμο γονέα", "name"], ["phone", "Τηλέφωνο επικοινωνίας", "tel"]]
+    : [["full_name", "Ονοματεπώνυμο", "name"], ["phone", "Τηλέφωνο επικοινωνίας", "tel"]];
+  for (const [name, label, autocomplete] of fields) {
+    const caption = createNode("label", label);
+    const input = createNode("input");
+    input.name = name;
+    input.type = name === "phone" ? "tel" : "text";
+    input.autocomplete = autocomplete;
+    input.required = true;
+    input.maxLength = name === "phone" ? 50 : 300;
+    caption.append(input);
+    form.append(caption);
+  }
+  const privacy = createNode("p", "Τα στοιχεία χρησιμοποιούνται μόνο για την οργάνωση της συγκεκριμένης δράσης και είναι ορατά μόνο στους διαχειριστές.", "activity-registration-note");
+  const status = createNode("p", undefined, "activity-registration-status");
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  const submit = createNode("button", "Υποβολή συμμετοχής");
+  submit.type = "submit";
+  form.append(privacy, status, submit);
+  if (previewId) {
+    submit.disabled = true;
+    status.textContent = "Προεπισκόπηση — δεν καταχωρίζονται δηλώσεις συμμετοχής.";
+    section.append(form);
+    return section;
+  }
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    submit.disabled = true;
+    status.textContent = "";
+    status.classList.remove("is-error");
+    const values = Object.fromEntries(new FormData(form));
+    client.rpc("activity_register", { activity_id: post.id, registration_data: values }).then(({ error }) => {
+      if (error) throw error;
+      form.reset();
+      status.textContent = "Η δήλωση συμμετοχής καταχωρίστηκε.";
+    }).catch(error => {
+      console.error("Activity registration failed", error.code ?? error.message);
+      status.textContent = "Η δήλωση δεν καταχωρίστηκε. Ελέγξτε τα στοιχεία και δοκιμάστε ξανά.";
+      status.classList.add("is-error");
+    }).finally(() => { submit.disabled = false; });
+  });
+  section.append(form);
+  return section;
+}
+
+function renderActivityDetail(posts) {
+  if (!activityPage) return;
+  const root = document.querySelector("#activity-detail");
+  root.hidden = false;
+  const id = new URL(location.href).searchParams.get("id");
+  const post = posts.find(item => item.id === id && activitySections.has(item.section));
+  if (!post) {
+    root.replaceChildren(createNode("h1", "Η δράση δεν βρέθηκε"), createNode("p", "Η δράση μπορεί να έχει αφαιρεθεί ή η διεύθυνση να μην είναι σωστή."));
+    document.title = "Η δράση δεν βρέθηκε — Ξενοπούλειο";
+    return;
+  }
+  const back = createNode("a", `← ${post.section === "draseis-paidia" ? "Δράσεις για παιδιά" : "Δράσεις για εκπαιδευτικούς και ενήλικες"}`, "back-home");
+  back.href = pageUrl(post.section);
+  const article = createNode("article", undefined, "activity-article");
+  const time = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "long", timeZone: "UTC" }).format(new Date(post.date)));
+  time.dateTime = post.date;
+  const title = createNode("h1", post.title);
+  article.append(time, title);
+  if (post.image) {
+    const image = createNode("img", undefined, "activity-hero-image");
+    image.src = safeImageUrl(post.image);
+    image.alt = post.alt;
+    article.append(image);
+  }
+  article.append(createNode("p", post.body, "activity-full-text"), activityRegistrationForm(post));
+  root.replaceChildren(back, article);
+  document.title = `${post.title} — Ξενοπούλειο`;
 }
 
 const publicContactEmails = ["xenopouleios.bibliothiki@gmail.com", "filoixenopouliou@gmail.com"];
@@ -178,7 +287,35 @@ export function renderContent(content) {
       else document.querySelector(`#${id} h2`).after(img);
     }
   }
+  const activityGrids = new Map();
   for (const post of [...content.posts].sort((a, b) => b.date.localeCompare(a.date))) {
+    if (activitySections.has(post.section)) {
+      let grid = activityGrids.get(post.section);
+      if (!grid) {
+        grid = createNode("div", undefined, "activity-cards");
+        document.querySelector(`#${post.section} h2`).parentElement.append(grid);
+        activityGrids.set(post.section, grid);
+      }
+      const card = createNode("article", undefined, "activity-card");
+      if (post.image) {
+        const image = createNode("img");
+        image.src = safeImageUrl(post.image);
+        image.alt = post.alt;
+        image.loading = "lazy";
+        card.append(image);
+      } else {
+        card.append(createNode("div", "Ξ", "activity-card-placeholder"));
+      }
+      const copy = createNode("div", undefined, "activity-card-copy");
+      const title = createNode("h3", post.title);
+      const summary = createNode("p", post.summary);
+      const link = createNode("a", "Διαβάστε περισσότερα →", "activity-card-link");
+      link.href = activityUrl(post.id);
+      copy.append(title, summary, link);
+      card.append(copy);
+      grid.append(card);
+      continue;
+    }
     const article = document.createElement("article");
     article.className = "published-post";
     const time = document.createElement("time");
@@ -201,6 +338,7 @@ export function renderContent(content) {
     article.append(body);
     document.querySelector(`#${post.section} h2`).parentElement.append(article);
   }
+  renderActivityDetail(content.posts);
   updateTitle();
 }
 
