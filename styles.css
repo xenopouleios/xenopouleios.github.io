@@ -22,9 +22,9 @@ svg { display: block; }
 .skip-link:focus { top: 12px; }
 .site-header { border-bottom: 1px solid var(--line); background: var(--paper); }
 .header-inner { max-width: 1800px; margin: auto; padding: 26px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.brand { display: flex; align-items: center; gap: 12px; flex-shrink: 0; font: bold 29px var(--serif); letter-spacing: -.8px; }
-.brand-logo { display: block; width: 60px; height: 80px; flex-shrink: 0; object-fit: cover; object-position: center; clip-path: ellipse(44% 45% at 50% 49%); }
-.brand-caption { display: block; margin-top: 6px; font: 8px Arial, sans-serif; letter-spacing: 1.7px; }
+.brand { display: flex; align-items: center; gap: 14px; flex-shrink: 0; font: bold 32px var(--serif); letter-spacing: -.8px; }
+.brand-logo { display: block; width: 66px; height: 88px; flex-shrink: 0; object-fit: cover; object-position: center; clip-path: ellipse(44% 45% at 50% 49%); }
+.brand-caption { display: block; margin-top: 6px; font: 9px Arial, sans-serif; letter-spacing: 1.7px; }
 .menu-toggle { display: none; width: 44px; height: 44px; padding: 10px; border: 1px solid var(--line); border-radius: 3px; background: transparent; color: var(--ink); cursor: pointer; }
 .menu-toggle span { display: block; width: 22px; height: 2px; background: currentColor; transition: transform .2s ease, opacity .2s ease; }
 nav { display: flex; flex-wrap: nowrap; align-items: center; gap: 16px; min-width: 0; max-width: 100%; padding: 6px; }
@@ -194,7 +194,8 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
   html { scroll-padding-top: 24px; }
   .page-width { width: calc(100% - 40px); }
   .header-inner { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding-inline: 20px; }
-  .brand-logo { width: 48px; height: 64px; }
+  .brand { gap: 12px; font-size: 30px; }
+  .brand-logo { width: 52px; height: 69px; }
   .menu-toggle { display: flex; flex-direction: column; align-items: center; justify-content: space-around; }
   .header-inner.menu-open .menu-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
   .header-inner.menu-open .menu-toggle span:nth-child(2) { opacity: 0; }
