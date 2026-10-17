@@ -106,11 +106,12 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .published-post time { display: block; margin-bottom: 12px; font-size: 12px; color: var(--muted); }
 .load-error { margin: 20px; padding: 18px; border: 2px solid #a65339; background: #fff5df; }
 .site-footer > a:last-child { font-size: 11px; }
-.activity-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 420px)); gap: 20px; justify-content: start; margin-top: 30px; }
+.activity-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 340px)); gap: 20px; justify-content: start; margin-top: 40px; padding-top: 32px; border-top: 2px solid #bb9673; }
 .activity-card { display: grid; grid-template-rows: auto 1fr; min-width: 0; width: 100%; border: 1px solid var(--line); background: #fffdf6; }
 .activity-card > img, .activity-card-placeholder { width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; background: #f1ecdf; }
 .activity-card-placeholder { display: grid; place-items: center; background: #e9ddc7; color: var(--terracotta); font: 70px var(--serif); }
-.activity-card-copy { display: flex; flex-direction: column; align-items: flex-start; padding: 22px; }
+.activity-card-copy { display: flex; flex-direction: column; align-items: flex-start; padding: 18px; }
+.activity-card-copy h3 { font-size: 22px; }
 .activity-card-copy h3 { margin: 0 0 12px; }
 .activity-card-copy p { margin: 0 0 22px; }
 .activity-card-link { margin-top: auto; color: var(--terracotta); font-weight: bold; text-decoration: underline; text-underline-offset: 4px; }
@@ -193,7 +194,7 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
   .detail { grid-template-columns: 1fr; gap: 13px; padding-block: 30px; }
   .detail-media:empty { display: none; }
   .activity-cards, .activity-registration-form { grid-template-columns: 1fr; }
-  .activity-card { max-width: 420px; }
+  .activity-card { max-width: 340px; }
   .activity-content { grid-template-columns: 1fr; gap: 26px; }
   .activity-hero-image { width: min(100%, 420px); margin-inline: auto; }
   .activity-registration { padding: 22px 18px; }
