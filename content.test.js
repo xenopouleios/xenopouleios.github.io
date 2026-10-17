@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { allFields, emptyContent, maxImageBytes, normalizeContent, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
+import { allFields, emptyContent, maxImageBytes, navigation, normalizeContent, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
 import { validatePublicConfig } from "./config.js";
 
 const post = () => ({ id: "test-1", section: "nea", title: "Νέα ανακοίνωση", body: "Το κείμενό μας.", date: "2026-10-15", image: "", alt: "" });
@@ -8,7 +8,11 @@ const post = () => ({ id: "test-1", section: "nea", title: "Νέα ανακοί�
 test("baseline and all editable sections are accepted", () => {
   assert.deepEqual(validateContent(emptyContent()), emptyContent());
   assert.equal(new Set(allFields.map(([id]) => id)).size, allFields.length);
-  assert.equal(sections.length, 8);
+  assert.equal(sections.length, 16);
+  const menuPages = navigation.flatMap(([, item]) => typeof item === "string" ? [item] : item.map(([id]) => id));
+  assert.equal(navigation.length, 8);
+  assert.deepEqual(new Set(menuPages), new Set(sections.map(([id]) => id)));
+  assert.equal(menuPages.length, sections.length);
   const content = emptyContent();
   for (const [id] of allFields) content.fields[id] = "Κείμενο";
   content.posts = [post()];

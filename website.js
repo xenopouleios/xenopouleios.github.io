@@ -8,6 +8,22 @@ const previewId = new URL(location.href).searchParams.get("preview");
 const requestedPage = location.pathname.split("/").pop().replace(/\.html$/, "");
 const activePage = sections.some(([id]) => id === requestedPage) ? requestedPage : null;
 if (activePage) document.body.dataset.page = activePage;
+const navigationGroups = [...document.querySelectorAll(".nav-group")];
+for (const group of navigationGroups) {
+  group.addEventListener("toggle", () => {
+    if (group.open) navigationGroups.filter(item => item !== group).forEach(item => { item.open = false; });
+  });
+}
+document.addEventListener("click", event => {
+  if (!event.target.closest("nav")) navigationGroups.forEach(group => { group.open = false; });
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    const openSummary = document.querySelector(".nav-group[open] summary");
+    navigationGroups.forEach(group => { group.open = false; });
+    openSummary?.focus();
+  }
+});
 
 function pageUrl(id = "") {
   const url = new URL(id ? `./${id}.html` : "./", location.href);
@@ -32,7 +48,8 @@ if (activePage) {
   breadcrumb.className = "back-home";
   breadcrumb.textContent = "← Επιστροφή στην αρχική";
   document.querySelector(".details").prepend(breadcrumb);
-  document.querySelector('nav [aria-current="page"]').scrollIntoView({ block: "nearest", inline: "nearest" });
+  const currentNavigation = document.querySelector('nav [aria-current="page"]');
+  (currentNavigation.closest(".nav-group")?.querySelector("summary") || currentNavigation).scrollIntoView({ block: "nearest", inline: "nearest" });
 }
 
 function updateTitle() {

@@ -1,12 +1,31 @@
 export const sections = [
   ["bibliothiki", "Ξενοπούλειος Παιδική Βιβλιοθήκη"],
   ["daneistiki", "Δανειστική βιβλιοθήκη"],
+  ["draseis-paidia", "Δράσεις για παιδιά"],
+  ["draseis-enilikes", "Δράσεις για εκπαιδευτικούς και ενήλικες"],
   ["mouseio", "Μουσείο Ξενόπουλου"],
+  ["xenopoulos-ergo", "Ζωή και έργο του Ξενόπουλου"],
+  ["mouseio-episkepseis", "Επισκέψεις στο Μουσείο"],
   ["filoi", "Ο σύλλογός μας"],
+  ["synergasies-foreis", "Φορείς με τους οποίους συνεργαζόμαστε"],
+  ["ekdiloseis", "Εκδηλώσεις που διοργανώνονται από κοινού"],
   ["freinet", "Δίκτυο Freinet"],
-  ["ekdiloseis", "Συνεργασίες - Εκδηλώσεις"],
   ["nea", "Νέα - Ανακοινώσεις"],
+  ["stigmes-draseon", "Στιγμές από προηγούμενες δράσεις"],
   ["epikoinonia", "Επικοινωνία"],
+  ["topothesia", "Τοποθεσία"],
+  ["forma-epikoinonias", "Φόρμα επικοινωνίας"],
+];
+
+export const navigation = [
+  ["Η Βιβλιοθήκη", [["bibliothiki", "Παρουσίαση της Ξενοπουλείου"], ["daneistiki", "Δανεισμός βιβλίων"]]],
+  ["Δράσεις", [["draseis-paidia", "Για παιδιά"], ["draseis-enilikes", "Για εκπαιδευτικούς και ενήλικες"]]],
+  ["Μουσείο Ξενόπουλου", [["mouseio", "Παρουσίαση του μουσείου"], ["xenopoulos-ergo", "Ζωή και έργο του Ξενόπουλου"], ["mouseio-episkepseis", "Επισκέψεις"]]],
+  ["Ο Σύλλογος", [["filoi", "Ποιοι είμαστε"]]],
+  ["Συνεργασίες - Εκδηλώσεις", [["synergasies-foreis", "Φορείς με τους οποίους συνεργαζόμαστε"], ["ekdiloseis", "Εκδηλώσεις που διοργανώνονται από κοινού"]]],
+  ["Δίκτυο Freinet", "freinet"],
+  ["Νέα - Ανακοινώσεις", [["nea", "Ενημερώσεις"], ["stigmes-draseon", "Στιγμές από προηγούμενες δράσεις"]]],
+  ["Επικοινωνία", [["epikoinonia", "Στοιχεία επικοινωνίας"], ["topothesia", "Τοποθεσία"], ["forma-epikoinonias", "Φόρμα επικοινωνίας"]]],
 ];
 
 export const homeFields = [
@@ -48,6 +67,16 @@ export function sectionFields(id) {
 
 export const allFields = [...homeFields, ...sections.flatMap(([id]) => sectionFields(id))];
 const legacyNoteIds = sections.map(([id]) => `${id}-note`);
+const legacyNavigation = {
+  bibliothiki: "Ξενοπούλειος Παιδική Βιβλιοθήκη",
+  daneistiki: "Δανειστική βιβλιοθήκη",
+  mouseio: "Μουσείο Ξενόπουλου",
+  filoi: "Ο σύλλογός μας",
+  freinet: "Δίκτυο Freinet",
+  ekdiloseis: "Συνεργασίες - Εκδηλώσεις",
+  nea: "Νέα - Ανακοινώσεις",
+  epikoinonia: "Επικοινωνία",
+};
 export const emptyContent = () => ({ fields: {}, images: {}, posts: [] });
 export const maxImageBytes = 5 * 1024 * 1024;
 export const imageTypes = ["image/jpeg", "image/png", "image/webp"];
@@ -94,6 +123,9 @@ export function validateContent(content) {
 
 export function normalizeContent(content, defaults = {}) {
   const normalized = structuredClone(content);
+  for (const [id, label] of Object.entries(legacyNavigation)) {
+    if (normalized.fields[`${id}-nav`] === label) delete normalized.fields[`${id}-nav`];
+  }
   for (const [id] of sections) {
     const bodyId = `${id}-body`;
     const noteId = `${id}-note`;
