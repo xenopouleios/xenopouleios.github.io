@@ -187,13 +187,15 @@ function renderActivityDetail(posts) {
   time.dateTime = post.date;
   const title = createNode("h1", post.title);
   article.append(time, title);
+  const activityContent = createNode("div", undefined, "activity-content");
   if (post.image) {
     const image = createNode("img", undefined, "activity-hero-image");
     image.src = safeImageUrl(post.image);
     image.alt = post.alt;
-    article.append(image);
+    activityContent.append(image);
   }
-  article.append(createNode("p", post.body, "activity-full-text"), activityRegistrationForm(post));
+  activityContent.append(createNode("p", post.body, "activity-full-text"));
+  article.append(activityContent, activityRegistrationForm(post));
   root.replaceChildren(back, article);
   document.title = `${post.title} — Ξενοπούλειο`;
 }

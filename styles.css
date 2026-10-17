@@ -117,11 +117,13 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .activity-card-copy p { margin: 0 0 22px; }
 .activity-card-link { margin-top: auto; color: var(--terracotta); font-weight: bold; text-decoration: underline; text-underline-offset: 4px; }
 .activity-detail { min-height: 65vh; padding-block: 20px 70px; }
-.activity-article { max-width: 760px; margin: 20px auto 0; }
+.activity-article { max-width: 1050px; margin: 20px auto 0; }
 .activity-article > time { display: block; margin-bottom: 14px; color: var(--muted); font-size: 13px; }
-.activity-article > h1 { margin: 0 0 24px; font: bold clamp(30px, 4vw, 48px)/1.1 var(--serif); }
-.activity-hero-image { display: block; width: min(100%, 680px); max-height: 440px; object-fit: contain; margin: 0 auto 30px; }
-.activity-full-text { white-space: pre-line; overflow-wrap: anywhere; text-align: justify; line-height: 1.85; }
+.activity-article > h1 { max-width: 760px; margin: 0 0 30px; font: bold clamp(30px, 4vw, 48px)/1.1 var(--serif); }
+.activity-content { display: grid; grid-template-columns: minmax(260px, 380px) minmax(0, 1fr); gap: 40px; align-items: start; }
+.activity-content:not(:has(.activity-hero-image)) { grid-template-columns: 1fr; }
+.activity-hero-image { display: block; width: 100%; max-height: 560px; object-fit: contain; }
+.activity-full-text { margin: 0; white-space: pre-line; overflow-wrap: anywhere; text-align: justify; line-height: 1.85; }
 .activity-registration { margin-top: 44px; padding: 28px; border-left: 5px solid var(--terracotta); background: #fffdf6; }
 .activity-registration h2 { margin-top: 0; }
 .activity-registration-form { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
@@ -193,6 +195,8 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
   .detail { grid-template-columns: 1fr; gap: 13px; padding-block: 30px; }
   .activity-cards, .activity-registration-form { grid-template-columns: 1fr; }
   .activity-card { max-width: 420px; }
+  .activity-content { grid-template-columns: 1fr; gap: 26px; }
+  .activity-hero-image { width: min(100%, 420px); margin-inline: auto; }
   .activity-registration { padding: 22px 18px; }
   .contact-form { grid-template-columns: 1fr; }
   .contact-card, .contact-form-section { padding: 20px; }
