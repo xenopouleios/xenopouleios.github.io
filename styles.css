@@ -118,7 +118,7 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .contact-form p { margin: 0; color: var(--muted); font-size: 12px; }
 .contact-form .button { width: fit-content; border: 0; cursor: pointer; }
 .contact-form .button:disabled { cursor: wait; opacity: .65; }
-.contact-website { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.contact-website[hidden] { display: none !important; }
 .contact-form-status:not(:empty) { padding: 12px; background: #eef3e9; color: var(--ink); }
 .contact-form-status.is-error:not(:empty) { background: #fff0e9; color: #8b3527; }
 #epikoinonia .detail-body a { color: var(--terracotta); text-decoration: underline; text-underline-offset: 4px; }
