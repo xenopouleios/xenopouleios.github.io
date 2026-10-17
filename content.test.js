@@ -82,10 +82,13 @@ test("legacy additional updates are merged into the single section text", () => 
 test("legacy section headings are discarded in favor of optional images", () => {
   const content = emptyContent();
   content.fields["mouseio-label"] = "02 / ΜΝΗΜΗ";
+  content.fields["mouseio-card-label"] = "02 / ΜΝΗΜΗ";
   assert.doesNotThrow(() => validateContent(content));
   const normalized = normalizeContent(content);
   assert.equal(Object.hasOwn(normalized.fields, "mouseio-label"), false);
+  assert.equal(Object.hasOwn(normalized.fields, "mouseio-card-label"), false);
   assert.equal(allFields.some(([id]) => id.endsWith("-label") && sections.some(([section]) => id === `${section}-label`)), false);
+  assert.equal(allFields.some(([id]) => id.endsWith("-card-label")), false);
 });
 
 test("images must use HTTPS and known slots", () => {

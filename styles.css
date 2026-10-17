@@ -81,8 +81,7 @@ h2 { font: 33px/1.25 var(--serif); letter-spacing: -.6px; margin: 0; }
 .card-museum { background: #f0e2d6; }
 .card-friends { background: #eee8d5; }
 .card-freinet { background: #e1e9e5; }
-.card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.card-number { font-size: 9px; letter-spacing: 1.3px; }
+.card-top { display: flex; align-items: center; justify-content: flex-end; }
 .card-icon { display: block; margin-block: 26px 20px; font: 43px/1 var(--serif); color: #526851; }
 .card-museum .card-icon { color: #985b42; }
 .card-friends .card-icon { color: #846b2c; }
