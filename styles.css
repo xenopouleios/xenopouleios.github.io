@@ -81,7 +81,7 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .detail { display: grid; grid-template-columns: 1fr 3fr; gap: 48px; padding-block: 45px; border-bottom: 1px solid var(--line); scroll-margin-top: 24px; }
 .detail-label { padding-top: 9px; font-size: 10px; line-height: 1.8; letter-spacing: 1.5px; color: var(--terracotta); }
 .detail p { max-width: 750px; color: var(--muted); font-size: 14px; line-height: 1.9; margin: 18px 0 0; }
-.detail p.detail-body { padding-left: 20px; border-left: 2px solid #bb9673; }
+.detail p.detail-body { padding-left: 20px; border-left: 2px solid #bb9673; text-align: justify; text-align-last: left; hyphens: auto; }
 .site-notice { display: flex; gap: 16px; align-items: center; margin-block: 14px 45px; padding: 20px 24px; background: #eeeadd; border-radius: 3px; }
 .site-notice > span { font-size: 30px; color: var(--terracotta); }
 .site-notice p { margin: 0; font-size: 12px; line-height: 1.8; color: var(--muted); }
