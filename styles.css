@@ -89,8 +89,6 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .band-label { font-size: 9px; letter-spacing: 2px; line-height: 2.1; }
 .details { padding-block: 28px; }
 .detail { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(0, 3fr); gap: 48px; padding-block: 45px; border-bottom: 1px solid var(--line); scroll-margin-top: 24px; }
-.detail:not(:has(.detail-media .content-image)) { grid-template-columns: 1fr; }
-.detail-media:empty { display: none; }
 .detail-media .content-image { width: 100%; max-height: 360px; margin: 0; object-fit: contain; }
 .detail p { max-width: 750px; color: var(--muted); font-size: 14px; line-height: 1.9; margin: 18px 0 0; }
 .detail p.detail-body { padding-left: 20px; border-left: 2px solid #bb9673; text-align: justify; text-align-last: left; hyphens: auto; }
@@ -193,6 +191,7 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
   .intro-band p { font-size: 24px; }
   .band-label { display: none; }
   .detail { grid-template-columns: 1fr; gap: 13px; padding-block: 30px; }
+  .detail-media:empty { display: none; }
   .activity-cards, .activity-registration-form { grid-template-columns: 1fr; }
   .activity-card { max-width: 420px; }
   .activity-content { grid-template-columns: 1fr; gap: 26px; }
