@@ -34,7 +34,6 @@ export function sectionFields(id) {
     [`${id}-title`, `#${id} h2`, "Τίτλος ενότητας"],
     [`${id}-label`, `#${id} .detail-label`, "Μικρή επικεφαλίδα"],
     [`${id}-body`, `#${id} .detail-body`, "Κείμενο ενότητας"],
-    [`${id}-note`, `#${id} .coming`, "Πρόσθετη ενημέρωση (προαιρετική)"],
   ];
   if (["bibliothiki", "mouseio", "filoi", "freinet"].includes(id)) {
     fields.push(
@@ -48,6 +47,7 @@ export function sectionFields(id) {
 }
 
 export const allFields = [...homeFields, ...sections.flatMap(([id]) => sectionFields(id))];
+const legacyNoteIds = sections.map(([id]) => `${id}-note`);
 export const emptyContent = () => ({ fields: {}, images: {}, posts: [] });
 export const maxImageBytes = 5 * 1024 * 1024;
 export const imageTypes = ["image/jpeg", "image/png", "image/webp"];
@@ -70,7 +70,7 @@ export function validateContent(content) {
   if (!content || typeof content !== "object" || Array.isArray(content)) throw new Error("Μη έγκυρο περιεχόμενο.");
   if (!content.fields || !content.images || !Array.isArray(content.posts)) throw new Error("Λείπουν στοιχεία περιεχομένου.");
   if (typeof content.fields !== "object" || Array.isArray(content.fields) || typeof content.images !== "object" || Array.isArray(content.images)) throw new Error("Μη έγκυρα πεδία περιεχομένου.");
-  const fieldIds = new Set(allFields.map(([id]) => id));
+  const fieldIds = new Set([...allFields.map(([id]) => id), ...legacyNoteIds]);
   for (const [id, value] of Object.entries(content.fields)) {
     if (!fieldIds.has(id) || typeof value !== "string" || value.length > 20000) throw new Error("Μη έγκυρο πεδίο κειμένου.");
   }
@@ -92,6 +92,20 @@ export function validateContent(content) {
   return content;
 }
 
+export function normalizeContent(content, defaults = {}) {
+  const normalized = structuredClone(content);
+  for (const [id] of sections) {
+    const bodyId = `${id}-body`;
+    const noteId = `${id}-note`;
+    const bodyValue = normalized.fields[bodyId] ?? defaults[bodyId] ?? "";
+    const body = bodyValue.trim();
+    const note = normalized.fields[noteId]?.trim();
+    if (note) normalized.fields[bodyId] = body ? `${bodyValue}\n\n${normalized.fields[noteId]}` : normalized.fields[noteId];
+    delete normalized.fields[noteId];
+  }
+  return normalized;
+}
+
 export function readDefaults(document) {
   for (const [id] of sections) {
     document.querySelectorAll(`a[href="#${id}"], a[href="./${id}.html"]`).forEach(link => {
@@ -99,10 +113,10 @@ export function readDefaults(document) {
     });
     const section = document.querySelector(`#${id}`);
     if (!section) throw new Error(`Δεν βρέθηκε η ενότητα: ${id}`);
-    let body = section.querySelector(".detail-body") || section.querySelector("p:not(.coming)");
+    let body = section.querySelector(".detail-body") || section.querySelector("p");
     if (!body) {
       body = document.createElement("p");
-      section.querySelector(".coming").before(body);
+      section.querySelector("div:last-child").append(body);
     }
     body.classList.add("detail-body");
   }

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { allFields, emptyContent, maxImageBytes, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
+import { allFields, emptyContent, maxImageBytes, normalizeContent, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
 import { validatePublicConfig } from "./config.js";
 
 const post = () => ({ id: "test-1", section: "nea", title: "Νέα ανακοίνωση", body: "Το κείμενό μας.", date: "2026-10-15", image: "", alt: "" });
@@ -26,6 +26,20 @@ test("text is treated as text, not HTML", () => {
   const content = emptyContent();
   content.fields["hero-title"] = '<script>alert("test")</script>';
   assert.equal(validateContent(content).fields["hero-title"], '<script>alert("test")</script>');
+});
+
+test("legacy additional updates are merged into the single section text", () => {
+  const content = emptyContent();
+  content.fields["bibliothiki-body"] = "Πρώτο κείμενο";
+  content.fields["bibliothiki-note"] = "Δεύτερο κείμενο";
+  assert.doesNotThrow(() => validateContent(content));
+  const normalized = normalizeContent(content);
+  assert.equal(normalized.fields["bibliothiki-body"], "Πρώτο κείμενο\n\nΔεύτερο κείμενο");
+  assert.equal(Object.hasOwn(normalized.fields, "bibliothiki-note"), false);
+  assert.equal(content.fields["bibliothiki-note"], "Δεύτερο κείμενο");
+  const noteOnly = emptyContent();
+  noteOnly.fields["bibliothiki-note"] = "Δεύτερο κείμενο";
+  assert.equal(normalizeContent(noteOnly, { "bibliothiki-body": "Αρχικό κείμενο" }).fields["bibliothiki-body"], "Αρχικό κείμενο\n\nΔεύτερο κείμενο");
 });
 
 test("images must use HTTPS and known slots", () => {

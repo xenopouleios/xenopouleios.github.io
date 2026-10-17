@@ -1,5 +1,5 @@
 import { client, configured, loadContent, publishContent, uploadImage } from "./cms.js";
-import { emptyContent, homeFields, readDefaults, sectionFields, sections, validateContent, validateImage } from "./content.js";
+import { emptyContent, homeFields, normalizeContent, readDefaults, sectionFields, sections, validateContent, validateImage } from "./content.js";
 import logoUrl from "./logo.png";
 import { mountLibraryAdmin } from "./library-admin.js";
 import { mountMembersAdmin } from "./members-admin.js";
@@ -343,12 +343,12 @@ async function enterWorkspace(session) {
     return;
   }
   const data = await loadContent();
-  content = data.document;
   version = data.version;
   userId = session.user.id;
   dirty = false;
   demo = false;
   await loadDefaults();
+  content = normalizeContent(data.document, defaults);
   showWorkspace();
 }
 

@@ -1,5 +1,5 @@
 import { configured, loadContent } from "./cms.js";
-import { allFields, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
+import { allFields, normalizeContent, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
 import { mountMemberPortal } from "./member-portal.js";
 import "./library.css";
 
@@ -50,6 +50,7 @@ if (activePage === "daneistiki") {
 
 export function renderContent(content) {
   validateContent(content);
+  content = normalizeContent(content, defaults);
   for (const [id, selector] of allFields) {
     const value = content.fields[id];
     if (value !== undefined && value !== defaults[id]) {
