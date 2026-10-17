@@ -16,6 +16,7 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(website, /VITE_ACTIVITY_REGISTRATIONS_ENABLED/);
   assert.match(website, /Προεπισκόπηση — δεν καταχωρίζονται δηλώσεις συμμετοχής/);
   assert.match(website, /"activity-content"/);
+  assert.match(website, /"ΠΡΟΣΕΧΩΣ"/);
 });
 
 test("activity publishing controls summaries and registration availability", () => {

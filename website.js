@@ -294,8 +294,13 @@ export function renderContent(content) {
     if (activitySections.has(post.section)) {
       let grid = activityGrids.get(post.section);
       if (!grid) {
+        const listing = createNode("section", undefined, "activity-listing");
+        const heading = createNode("h3", "ΠΡΟΣΕΧΩΣ");
+        heading.id = `upcoming-${post.section}`;
+        listing.setAttribute("aria-labelledby", heading.id);
         grid = createNode("div", undefined, "activity-cards");
-        document.querySelector(`#${post.section} h2`).parentElement.append(grid);
+        listing.append(heading, grid);
+        document.querySelector(`#${post.section}`).append(listing);
         activityGrids.set(post.section, grid);
       }
       const card = createNode("article", undefined, "activity-card");
