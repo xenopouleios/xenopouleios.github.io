@@ -15,7 +15,7 @@ export function mountMemberPortal(root) {
   status.setAttribute("role", "status");
   const body = node("div");
   root.append(tabs, status, body);
-  let mode = "books";
+  let mode = "";
   let generation = 0;
   let disposeCatalog = null;
   let busy = false;
@@ -87,7 +87,7 @@ export function mountMemberPortal(root) {
     } else if (mode === "register") registration();
     else login();
   }
-  for (const [key, label] of [["register", "Εγγραφή μέλους"], ["login", "Σύνδεση μέλους"], ["books", "Βιβλία"]]) {
+  for (const [key, label] of [["register", "Εγγραφή μέλους"], ["login", "Σύνδεση μέλους"], ["books", "Κατάλογος βιβλίων"]]) {
     const button = act(label, () => show(key));
     controls.set(key, button);
     tabs.append(button);
@@ -218,11 +218,11 @@ export function mountMemberPortal(root) {
     if (event === "PASSWORD_RECOVERY") passwordRequired = true;
   });
   window.addEventListener("pagehide", () => { hidden = true; clear(); });
-  window.addEventListener("pageshow", event => { if (event.persisted) { hidden = false; show(mode); } });
+  window.addEventListener("pageshow", event => { if (event.persisted) { hidden = false; if (mode) show(mode); } });
   window.addEventListener("storage", event => {
     if (event.key === "xenopouleio-member-auth" && !event.newValue) clear();
   });
-  show(passwordRequired || authParams.has("access_token") || linkError ? "login" : "books");
+  if (passwordRequired || authParams.has("access_token") || linkError) show("login");
   if (linkError) status.textContent = "Ο προσωπικός σύνδεσμος δεν είναι πλέον έγκυρος. Ζητήστε νέο από τη βιβλιοθήκη ή συνδεθείτε με τον κωδικό σας.";
   return () => { hidden = true; clear(); subscription.unsubscribe(); };
 }
