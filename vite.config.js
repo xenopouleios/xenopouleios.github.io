@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv } from "vite";
 import { resolve } from "node:path";
-import { readFile, writeFile } from "node:fs/promises";
+import { copyFile, readFile, writeFile } from "node:fs/promises";
 import { validatePublicConfig } from "./config.js";
 import { sections } from "./content.js";
 
@@ -29,6 +29,17 @@ export default defineConfig(({ mode }) => {
             .replace("<title>Ξενοπούλειο — Βιβλία, μνήμη, δημιουργία</title>", `<title>${title} — Ξενοπούλειο</title>`);
           await writeFile(resolve(output, `${id}.html`), page);
         }));
+        // Keep the immediately previous asset names for visitors holding cached HTML during this transition.
+        await Promise.all([
+          ["website.js", "website-Dr7WTfeN.js"],
+          ["library.js", "library-CsMCTZtk.js"],
+          ["website.css", "website-DYImzFJy.css"],
+          ["library.css", "library-DhtwxyMd.css"],
+          ["admin.js", "admin-GmBm2CwR.js"],
+          ["admin.css", "admin-BbR9_CR5.css"],
+          ["logo.png", "logo-ChW4RBXG.png"],
+          ["favicon.svg", "favicon-Bmq9bexH.svg"],
+        ].map(([source, alias]) => copyFile(resolve(output, "assets", source), resolve(output, "assets", alias))));
       },
     }],
     build: {
@@ -36,6 +47,11 @@ export default defineConfig(({ mode }) => {
         input: {
           website: resolve(import.meta.dirname, "index.html"),
           admin: resolve(import.meta.dirname, "admin", "index.html"),
+        },
+        output: {
+          entryFileNames: "assets/[name].js",
+          chunkFileNames: "assets/[name].js",
+          assetFileNames: "assets/[name][extname]",
         },
       },
     },
