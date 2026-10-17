@@ -8,7 +8,7 @@ const post = () => ({ id: "test-1", section: "nea", title: "Νέα ανακοί�
 test("baseline and all editable sections are accepted", () => {
   assert.deepEqual(validateContent(emptyContent()), emptyContent());
   assert.equal(new Set(allFields.map(([id]) => id)).size, allFields.length);
-  assert.equal(sections.length, 16);
+  assert.equal(sections.length, 14);
   const menuPages = navigation.flatMap(([, item]) => typeof item === "string" ? [item] : item.map(([id]) => id));
   assert.equal(navigation.length, 8);
   assert.deepEqual(new Set(menuPages), new Set(sections.map(([id]) => id)));
@@ -17,6 +17,19 @@ test("baseline and all editable sections are accepted", () => {
   for (const [id] of allFields) content.fields[id] = "Κείμενο";
   content.posts = [post()];
   assert.equal(validateContent(content), content);
+});
+
+test("legacy contact pages are merged into the single contact page", () => {
+  const content = emptyContent();
+  content.fields["epikoinonia-body"] = "Κύριο κείμενο";
+  content.fields["topothesia-body"] = "Οδηγίες πρόσβασης";
+  content.fields["forma-epikoinonias-body"] = "Παλαιό κείμενο φόρμας";
+  content.posts = [{ ...post(), section: "topothesia" }];
+  assert.doesNotThrow(() => validateContent(content));
+  const normalized = normalizeContent(content);
+  assert.equal(normalized.fields["epikoinonia-body"], "Κύριο κείμενο\n\nΟδηγίες πρόσβασης\n\nΠαλαιό κείμενο φόρμας");
+  assert.equal(Object.hasOwn(normalized.fields, "topothesia-body"), false);
+  assert.equal(normalized.posts[0].section, "epikoinonia");
 });
 
 test("malformed documents and unknown fields are rejected", () => {

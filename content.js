@@ -13,8 +13,6 @@ export const sections = [
   ["nea", "Νέα - Ανακοινώσεις"],
   ["stigmes-draseon", "Στιγμές από προηγούμενες δράσεις"],
   ["epikoinonia", "Επικοινωνία"],
-  ["topothesia", "Τοποθεσία"],
-  ["forma-epikoinonias", "Φόρμα επικοινωνίας"],
 ];
 
 export const navigation = [
@@ -25,7 +23,7 @@ export const navigation = [
   ["Συνεργασίες - Εκδηλώσεις", [["synergasies-foreis", "Φορείς με τους οποίους συνεργαζόμαστε"], ["ekdiloseis", "Εκδηλώσεις που διοργανώνονται από κοινού"]]],
   ["Δίκτυο Freinet", "freinet"],
   ["Νέα - Ανακοινώσεις", [["nea", "Ενημερώσεις"], ["stigmes-draseon", "Στιγμές από προηγούμενες δράσεις"]]],
-  ["Επικοινωνία", [["epikoinonia", "Στοιχεία επικοινωνίας"], ["topothesia", "Τοποθεσία"], ["forma-epikoinonias", "Φόρμα επικοινωνίας"]]],
+  ["Επικοινωνία", "epikoinonia"],
 ];
 
 export const homeFields = [
@@ -66,7 +64,13 @@ export function sectionFields(id) {
 }
 
 export const allFields = [...homeFields, ...sections.flatMap(([id]) => sectionFields(id))];
-const legacyNoteIds = sections.map(([id]) => `${id}-note`);
+const legacyContactSections = ["topothesia", "forma-epikoinonias"];
+const legacyNoteIds = [...sections.map(([id]) => `${id}-note`), ...legacyContactSections.map(id => `${id}-note`)];
+const legacyContactDefaults = new Set([
+  "Τα στοιχεία επικοινωνίας θα προστεθούν μόλις επιβεβαιωθούν από τους υπευθύνους.",
+  "Η διεύθυνση και οι πληροφορίες πρόσβασης στο Ξενοπούλειο θα παρουσιαστούν εδώ.",
+  "Η φόρμα επικοινωνίας θα προστεθεί αφού επιβεβαιωθούν ο παραλήπτης και ο τρόπος διαχείρισης των μηνυμάτων.",
+]);
 const legacyNavigation = {
   bibliothiki: "Ξενοπούλειος Παιδική Βιβλιοθήκη",
   daneistiki: "Δανειστική βιβλιοθήκη",
@@ -99,11 +103,11 @@ export function validateContent(content) {
   if (!content || typeof content !== "object" || Array.isArray(content)) throw new Error("Μη έγκυρο περιεχόμενο.");
   if (!content.fields || !content.images || !Array.isArray(content.posts)) throw new Error("Λείπουν στοιχεία περιεχομένου.");
   if (typeof content.fields !== "object" || Array.isArray(content.fields) || typeof content.images !== "object" || Array.isArray(content.images)) throw new Error("Μη έγκυρα πεδία περιεχομένου.");
-  const fieldIds = new Set([...allFields.map(([id]) => id), ...legacyNoteIds]);
+  const fieldIds = new Set([...allFields.map(([id]) => id), ...legacyContactSections.flatMap(id => sectionFields(id).map(([fieldId]) => fieldId)), ...legacyNoteIds]);
   for (const [id, value] of Object.entries(content.fields)) {
     if (!fieldIds.has(id) || typeof value !== "string" || value.length > 20000) throw new Error("Μη έγκυρο πεδίο κειμένου.");
   }
-  const imageIds = new Set(["logo", "hero", ...sections.map(([id]) => id)]);
+  const imageIds = new Set(["logo", "hero", ...sections.map(([id]) => id), ...legacyContactSections]);
   for (const [id, image] of Object.entries(content.images)) {
     if (!imageIds.has(id) || !image || typeof image.alt !== "string" || image.alt.length > 500) throw new Error("Μη έγκυρη εικόνα.");
     safeImageUrl(image.url);
@@ -111,7 +115,7 @@ export function validateContent(content) {
   if (content.posts.length > 500) throw new Error("Επιτρέπονται έως 500 αναρτήσεις.");
   const ids = new Set();
   for (const post of content.posts) {
-    if (!post || typeof post.id !== "string" || ids.has(post.id) || !sections.some(([id]) => id === post.section)) throw new Error("Μη έγκυρη ανάρτηση.");
+    if (!post || typeof post.id !== "string" || ids.has(post.id) || ![...sections.map(([id]) => id), ...legacyContactSections].includes(post.section)) throw new Error("Μη έγκυρη ανάρτηση.");
     ids.add(post.id);
     if (typeof post.title !== "string" || !post.title.trim() || post.title.length > 300 || typeof post.body !== "string" || !post.body.trim() || post.body.length > 50000 || typeof post.alt !== "string" || post.alt.length > 500) throw new Error("Συμπληρώστε τίτλο και κείμενο στην ανάρτηση.");
     if (typeof post.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(post.date) || !Number.isFinite(Date.parse(post.date)) || new Date(post.date).toISOString().slice(0, 10) !== post.date) throw new Error("Μη έγκυρη ημερομηνία.");
@@ -135,6 +139,18 @@ export function normalizeContent(content, defaults = {}) {
     if (note) normalized.fields[bodyId] = body ? `${bodyValue}\n\n${normalized.fields[noteId]}` : normalized.fields[noteId];
     delete normalized.fields[noteId];
   }
+  const storedContactBody = normalized.fields["epikoinonia-body"]?.trim();
+  const contactParts = [storedContactBody && !legacyContactDefaults.has(storedContactBody) ? normalized.fields["epikoinonia-body"] : defaults["epikoinonia-body"] ?? ""].filter(Boolean);
+  for (const id of legacyContactSections) {
+    const body = normalized.fields[`${id}-body`]?.trim();
+    if (body && !legacyContactDefaults.has(body) && !contactParts.includes(body)) contactParts.push(body);
+    for (const [fieldId] of sectionFields(id)) delete normalized.fields[fieldId];
+    delete normalized.fields[`${id}-note`];
+    if (!normalized.images.epikoinonia && normalized.images[id]) normalized.images.epikoinonia = normalized.images[id];
+    delete normalized.images[id];
+  }
+  if (contactParts.length) normalized.fields["epikoinonia-body"] = contactParts.join("\n\n");
+  normalized.posts = normalized.posts.map(post => legacyContactSections.includes(post.section) ? { ...post, section: "epikoinonia" } : post);
   return normalized;
 }
 

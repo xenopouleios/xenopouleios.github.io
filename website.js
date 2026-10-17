@@ -84,6 +84,28 @@ if (activePage === "daneistiki") {
   else catalog.textContent = "Ο κατάλογος βιβλίων δεν έχει συνδεθεί ακόμη.";
 }
 
+if (activePage === "epikoinonia") {
+  const map = document.querySelector(".contact-map iframe");
+  map.src = map.dataset.src;
+}
+
+document.querySelector(".contact-form")?.addEventListener("submit", event => {
+  event.preventDefault();
+  const data = new FormData(event.currentTarget);
+  const recipients = {
+    library: "xenopouleios.bibliothiki@gmail.com",
+    association: "filoixenopouliou@gmail.com",
+  };
+  const name = data.get("name").trim();
+  const email = data.get("email").trim();
+  const recipient = recipients[data.get("recipient")];
+  const message = data.get("message").trim();
+  if (!recipient) throw new Error("Δεν επιλέχθηκε έγκυρος παραλήπτης.");
+  const subject = encodeURIComponent(`Μήνυμα από ${name}`);
+  const body = encodeURIComponent(`Ονοματεπώνυμο: ${name}\nEmail: ${email}\n\n${message}`);
+  location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
+});
+
 export function renderContent(content) {
   validateContent(content);
   content = normalizeContent(content, defaults);
