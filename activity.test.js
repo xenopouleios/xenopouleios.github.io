@@ -9,6 +9,7 @@ const database = await readFile(new URL("./supabase/activities.sql", import.meta
 
 test("activity cards link to details with category-specific registration forms", () => {
   assert.match(website, /"Διαβάστε περισσότερα →"/);
+  assert.match(website, /createNode\("a", undefined, "activity-card"\)/);
   assert.match(website, /\["child_name", "Ονοματεπώνυμο παιδιού"/);
   assert.match(website, /\["guardian_name", "Ονοματεπώνυμο γονέα"/);
   assert.match(website, /\["full_name", "Ονοματεπώνυμο"/);

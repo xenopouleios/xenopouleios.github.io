@@ -303,7 +303,8 @@ export function renderContent(content) {
         document.querySelector(`#${post.section}`).append(listing);
         activityGrids.set(post.section, grid);
       }
-      const card = createNode("article", undefined, "activity-card");
+      const card = createNode("a", undefined, "activity-card");
+      card.href = activityUrl(post.id);
       if (post.image) {
         const image = createNode("img");
         image.src = safeImageUrl(post.image);
@@ -316,8 +317,7 @@ export function renderContent(content) {
       const copy = createNode("div", undefined, "activity-card-copy");
       const title = createNode("h3", post.title);
       const summary = createNode("p", post.summary);
-      const link = createNode("a", "Διαβάστε περισσότερα →", "activity-card-link");
-      link.href = activityUrl(post.id);
+      const link = createNode("span", "Διαβάστε περισσότερα →", "activity-card-link");
       copy.append(title, summary, link);
       card.append(copy);
       grid.append(card);
