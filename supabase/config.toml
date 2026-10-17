@@ -1,3 +1,7 @@
 [functions.member-invitation]
 # The function verifies the user's token with Auth and checks the administrator allowlist.
 verify_jwt = false
+
+[functions.contact-email]
+# Public form with server-side validation, rate limiting and a private recipient.
+verify_jwt = false

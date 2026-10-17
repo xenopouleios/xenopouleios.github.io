@@ -1,4 +1,4 @@
-import { configured, loadContent } from "./cms.js";
+import { client, configured, loadContent } from "./cms.js";
 import { allFields, normalizeContent, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
 import { mountMemberPortal } from "./member-portal.js";
 import "./library.css";
@@ -89,21 +89,67 @@ if (activePage === "epikoinonia") {
   map.src = map.dataset.src;
 }
 
-document.querySelector(".contact-form")?.addEventListener("submit", event => {
+const publicContactEmails = ["xenopouleios.bibliothiki@gmail.com", "filoixenopouliou@gmail.com"];
+function linkPublicContactEmails() {
+  const body = document.querySelector("#epikoinonia .detail-body");
+  if (!body) return;
+  const copy = body.cloneNode(true);
+  copy.querySelectorAll("br").forEach(br => br.replaceWith("\n"));
+  const pattern = new RegExp(`(${publicContactEmails.map(email => email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "g");
+  const fragment = document.createDocumentFragment();
+  for (const part of copy.textContent.split(pattern)) {
+    if (publicContactEmails.includes(part)) {
+      const link = document.createElement("a");
+      link.href = `mailto:${part}`;
+      link.textContent = part;
+      fragment.append(link);
+    } else {
+      fragment.append(part);
+    }
+  }
+  body.replaceChildren(fragment);
+  body.classList.add("content-text");
+}
+linkPublicContactEmails();
+
+const contactForm = document.querySelector(".contact-form");
+const contactFormOpenedAt = Date.now();
+const contactEmailEnabled = import.meta.env.VITE_CONTACT_EMAIL_ENABLED === "true";
+if (contactEmailEnabled && contactForm) {
+  contactForm.querySelector("button[type=submit]").disabled = false;
+  contactForm.querySelector(".contact-form-status").textContent = "";
+}
+contactForm?.addEventListener("submit", async event => {
   event.preventDefault();
+  if (!contactEmailEnabled) return;
   const data = new FormData(event.currentTarget);
-  const recipients = {
-    library: "xenopouleios.bibliothiki@gmail.com",
-    association: "filoixenopouliou@gmail.com",
-  };
-  const name = data.get("name").trim();
-  const email = data.get("email").trim();
-  const recipient = recipients[data.get("recipient")];
-  const message = data.get("message").trim();
-  if (!recipient) throw new Error("Δεν επιλέχθηκε έγκυρος παραλήπτης.");
-  const subject = encodeURIComponent(`Μήνυμα από ${name}`);
-  const body = encodeURIComponent(`Ονοματεπώνυμο: ${name}\nEmail: ${email}\n\n${message}`);
-  location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
+  const button = contactForm.querySelector("button[type=submit]");
+  const status = contactForm.querySelector(".contact-form-status");
+  status.textContent = "";
+  status.classList.remove("is-error");
+  button.disabled = true;
+  try {
+    if (!configured) throw new Error("Η φόρμα επικοινωνίας δεν έχει συνδεθεί ακόμη.");
+    const { error } = await client.functions.invoke("contact-email", {
+      body: {
+        name: data.get("name"),
+        email: data.get("email"),
+        subject: data.get("subject"),
+        message: data.get("message"),
+        website: data.get("website"),
+        opened_at: contactFormOpenedAt,
+      },
+    });
+    if (error) throw error;
+    contactForm.reset();
+    status.textContent = "Το μήνυμά σας στάλθηκε. Θα επικοινωνήσουμε μαζί σας το συντομότερο δυνατό.";
+  } catch (error) {
+    console.error("Contact email failed", error.message);
+    status.textContent = "Το μήνυμα δεν στάλθηκε. Δοκιμάστε ξανά σε λίγο ή χρησιμοποιήστε ένα από τα email επικοινωνίας.";
+    status.classList.add("is-error");
+  } finally {
+    button.disabled = false;
+  }
 });
 
 export function renderContent(content) {
@@ -117,6 +163,7 @@ export function renderContent(content) {
       element.classList.add("content-text");
     }
   }
+  linkPublicContactEmails();
   for (const [id, image] of Object.entries(content.images)) {
     if (!image.url) continue;
     const img = document.createElement("img");

@@ -112,11 +112,16 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .map-link { display: inline-block; margin-top: 14px; font-size: 13px; }
 .contact-form { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .contact-form label { display: grid; gap: 7px; font-size: 13px; font-weight: bold; }
-.contact-form input, .contact-form select, .contact-form textarea { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid var(--line); border-radius: 2px; background: white; color: var(--ink); font: 14px/1.5 Arial, sans-serif; }
+.contact-form input, .contact-form textarea { width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid var(--line); border-radius: 2px; background: white; color: var(--ink); font: 14px/1.5 Arial, sans-serif; }
 .contact-form textarea { resize: vertical; }
-.contact-recipient, .contact-message, .contact-form p, .contact-form .button { grid-column: 1 / -1; }
+.contact-subject, .contact-message, .contact-form p, .contact-form .button { grid-column: 1 / -1; }
 .contact-form p { margin: 0; color: var(--muted); font-size: 12px; }
 .contact-form .button { width: fit-content; border: 0; cursor: pointer; }
+.contact-form .button:disabled { cursor: wait; opacity: .65; }
+.contact-website { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.contact-form-status:not(:empty) { padding: 12px; background: #eef3e9; color: var(--ink); }
+.contact-form-status.is-error:not(:empty) { background: #fff0e9; color: #8b3527; }
+#epikoinonia .detail-body a { color: var(--terracotta); text-decoration: underline; text-underline-offset: 4px; }
 
 @media (min-width: 1440px) {
   .hero { padding-block: 80px; }

@@ -113,10 +113,12 @@
               <form class="contact-form">
                 <label>Ονοματεπώνυμο<input name="name" type="text" autocomplete="name" required maxlength="150"></label>
                 <label>Email<input name="email" type="email" autocomplete="email" required maxlength="254"></label>
-                <label class="contact-recipient">Θέμα<select name="recipient" required><option value="library">Βιβλία και δανεισμός</option><option value="association">Πρόγραμμα και δράσεις του συλλόγου</option></select></label>
+                <label class="contact-subject">Θέμα<input name="subject" type="text" required maxlength="200"></label>
                 <label class="contact-message">Μήνυμα<textarea name="message" required maxlength="5000" rows="7"></textarea></label>
-                <p id="contact-form-note">Με την αποστολή θα ανοίξει η εφαρμογή email της συσκευής σας με συμπληρωμένο το μήνυμα.</p>
-                <button class="button" type="submit" aria-describedby="contact-form-note">Άνοιγμα email για αποστολή</button>
+                <label class="contact-website" aria-hidden="true" inert hidden>Ιστότοπος<input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+                <p id="contact-form-note">Τα στοιχεία σας χρησιμοποιούνται μόνο για να απαντήσουμε στο μήνυμά σας.</p>
+                <p class="contact-form-status" role="status" aria-live="polite">Η ηλεκτρονική αποστολή θα ενεργοποιηθεί σύντομα. Μέχρι τότε μπορείτε να χρησιμοποιήσετε ένα από τα email επικοινωνίας.</p>
+                <button class="button" type="submit" aria-describedby="contact-form-note" disabled>Αποστολή μηνύματος</button>
               </form>
             </section>
           </div>

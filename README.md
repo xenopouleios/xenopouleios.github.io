@@ -43,6 +43,22 @@
 
 Αναπτύξτε την Edge Function `supabase/functions/member-invitation/index.ts` ως `member-invitation`, με `verify_jwt = false` όπως στο `supabase/config.toml` (ή κλείστε το «Verify JWT with legacy secret» στο dashboard). Η ίδια η συνάρτηση επαληθεύει το πραγματικό token στον Auth server και ελέγχει την ιδιότητα διαχειριστή· δεν βασίζεται στην παλιά gateway επαλήθευση JWT, που δεν υποστηρίζει τα νεότερα signing keys. Χρησιμοποιεί τα ενσωματωμένα server-only secrets του Supabase και δημιουργεί προσωπικό σύνδεσμο μόνο για εγκεκριμένη αίτηση. Το `membership_invitation` εκτελείται μόνο από `service_role`, ποτέ από browser. Δεν τοποθετούμε service-role κλειδί στο GitHub, στα build variables ή στον browser.
 
+#### Ασφαλής φόρμα επικοινωνίας
+
+Η φόρμα καλεί την Edge Function `contact-email`. Ο παραλήπτης παραμένει αποκλειστικά σε Supabase secret και δεν περιλαμβάνεται στο HTML, στο JavaScript, στο GitHub ή στις απαντήσεις της συνάρτησης.
+
+1. Εκτελέστε μία φορά το `supabase/contact.sql` στο Supabase SQL Editor. Επιτρέπει έως 5 μηνύματα ανά IP και ώρα και δεν εκθέτει τον πίνακα ορίων στους επισκέπτες.
+2. Δημιουργήστε λογαριασμό σε email provider συμβατό με το Resend API και αποκτήστε API key. Για κανονική αποστολή χρησιμοποιήστε επαληθευμένο sender/domain.
+3. Στο **Supabase → Edge Functions → Secrets** καταχωρίστε απευθείας, χωρίς να τα γράψετε σε αρχείο ή συνομιλία:
+   - `RESEND_API_KEY`: το μυστικό κλειδί του provider.
+   - `CONTACT_TO_EMAIL`: ο ιδιωτικός παραλήπτης της φόρμας.
+   - `CONTACT_FROM_EMAIL`: ο επαληθευμένος αποστολέας, π.χ. `Ξενοπούλειο <contact@example.gr>`.
+4. Αναπτύξτε το `supabase/functions/contact-email/index.ts` ως `contact-email`, με `verify_jwt = false` όπως στο `supabase/config.toml`.
+5. Στο GitHub, **Settings → Secrets and variables → Actions → Variables**, ορίστε `CONTACT_EMAIL_ENABLED` σε `true` και εκτελέστε ξανά το Pages workflow. Χωρίς αυτή τη μεταβλητή η φόρμα εμφανίζεται ασφαλώς ως προσωρινά ανενεργή.
+6. Στείλτε ένα δοκιμαστικό μήνυμα από τη ζωντανή σελίδα και επιβεβαιώστε παραλαβή και λειτουργία του Reply.
+
+Η συνάρτηση δέχεται αιτήματα μόνο από το επίσημο site, επικυρώνει και περιορίζει όλα τα πεδία, χρησιμοποιεί honeypot, απορρίπτει υπερβολικά γρήγορες/παλιές φόρμες, εφαρμόζει μόνιμο rate limit στη βάση και δεν καταγράφει το περιεχόμενο ή τον ιδιωτικό παραλήπτη.
+
 Στο Supabase Auth, Site URL: `https://xenopouleios.github.io/daneistiki.html`. Επιτρεπόμενα Redirect URLs: η ίδια διεύθυνση και `https://xenopouleios.github.io/admin/` (διατηρείται και το παλιό admin URL για υπάρχοντες συνδέσμους). Οι σύνδεσμοι δεν καταγράφονται σε logs ή στη βάση και εμφανίζονται μόνο προσωρινά στον διαχειριστή. Η σύνδεση μελών χρησιμοποιεί χωριστό storage key και `sessionStorage`, ώστε να μη συνδέεται με τη συνεδρία διαχειριστή. Οι ιδιωτικές οθόνες καθαρίζονται στην αποσύνδεση και κατά την απομάκρυνση από τη σελίδα.
 
 Το `supabase/lending.test.sql` εκτελεί πραγματικές δοκιμές ρόλων/έγκρισης/δανεισμού/επιστροφής μέσα σε συναλλαγή που αναιρείται, χωρίς μόνιμα δοκιμαστικά μέλη ή δανεισμούς.
