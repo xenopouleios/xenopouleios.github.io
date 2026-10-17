@@ -8,7 +8,17 @@ const previewId = new URL(location.href).searchParams.get("preview");
 const requestedPage = location.pathname.split("/").pop().replace(/\.html$/, "");
 const activePage = sections.some(([id]) => id === requestedPage) ? requestedPage : null;
 if (activePage) document.body.dataset.page = activePage;
+const header = document.querySelector(".header-inner");
+const menuToggle = document.querySelector(".menu-toggle");
 const navigationGroups = [...document.querySelectorAll(".nav-group")];
+function setMobileMenuOpen(open) {
+  header.classList.toggle("menu-open", open);
+  menuToggle.setAttribute("aria-expanded", String(open));
+  menuToggle.setAttribute("aria-label", open ? "Κλείσιμο μενού" : "Άνοιγμα μενού");
+}
+menuToggle.addEventListener("click", () => {
+  setMobileMenuOpen(menuToggle.getAttribute("aria-expanded") !== "true");
+});
 for (const group of navigationGroups) {
   group.addEventListener("toggle", () => {
     if (group.open) navigationGroups.filter(item => item !== group).forEach(item => { item.open = false; });
@@ -16,13 +26,22 @@ for (const group of navigationGroups) {
 }
 document.addEventListener("click", event => {
   if (!event.target.closest("nav")) navigationGroups.forEach(group => { group.open = false; });
+  if (!event.target.closest(".header-inner")) setMobileMenuOpen(false);
 });
 document.addEventListener("keydown", event => {
   if (event.key === "Escape") {
     const openSummary = document.querySelector(".nav-group[open] summary");
+    const menuWasOpen = menuToggle.getAttribute("aria-expanded") === "true";
     navigationGroups.forEach(group => { group.open = false; });
-    openSummary?.focus();
+    setMobileMenuOpen(false);
+    (menuWasOpen ? menuToggle : openSummary)?.focus();
   }
+});
+document.querySelectorAll("nav a").forEach(link => {
+  link.addEventListener("click", () => setMobileMenuOpen(false));
+});
+window.addEventListener("resize", () => {
+  if (window.innerWidth > 760) setMobileMenuOpen(false);
 });
 
 function pageUrl(id = "") {
