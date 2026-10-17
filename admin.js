@@ -5,6 +5,7 @@ import { mountLibraryAdmin } from "./library-admin.js";
 import { mountMembersAdmin } from "./members-admin.js";
 import { mountLendingAdmin } from "./lending-admin.js";
 import { mountActivityAdmin } from "./activity-admin.js";
+import { createUndoHistory } from "./admin-history.js";
 import "./library.css";
 
 const $ = id => document.getElementById(id);
@@ -24,6 +25,8 @@ const linkType = new URLSearchParams(location.hash.slice(1)).get("type");
 let recovery = linkType === "recovery" || linkType === "invite";
 const previewId = crypto.randomUUID();
 const activityRegistrationsEnabled = import.meta.env.VITE_ACTIVITY_REGISTRATIONS_ENABLED === "true";
+const undoHistory = createUndoHistory();
+const contentEditors = () => active === "home" || active === "posts" || sections.some(([id]) => id === active);
 
 function message(text, kind = "") {
   $("status").textContent = text;
@@ -65,6 +68,7 @@ async function run(action) {
 function updateState() {
   $("publish").disabled = demo || !dirty || busy;
   $("preview").disabled = busy || bookDirty || ["members", "lending", "activity-registrations"].includes(active);
+  $("undo").disabled = busy || !undoHistory.canUndo || !contentEditors() || bookDirty || memberDirty;
   $("save-state").textContent = demo ? "Δοκιμή μόνο — δεν γίνεται αποθήκευση." : memberDirty
     ? `Το μέλος δεν αποθηκεύτηκε ακόμη. Πατήστε «Αποθήκευση μέλους — ιδιωτικά».${dirty ? " Υπάρχουν επίσης αδημοσίευτες αλλαγές στα κείμενα." : ""}`
     : bookDirty
@@ -75,6 +79,10 @@ function updateState() {
 function changed() {
   dirty = true;
   updateState();
+}
+
+function rememberChange(group) {
+  undoHistory.remember(content, dirty, group);
 }
 
 function element(tag, text, className) {
@@ -102,7 +110,13 @@ function field(container, id, label, value, onInput, { multiline = false, type =
   if (multiline) input.rows = 5;
   const caption = element("label", label);
   caption.htmlFor = name;
-  input.addEventListener("input", () => { onInput(input.value); changed(); });
+  const undoGroup = `field-${id}`;
+  input.addEventListener("input", () => {
+    rememberChange(undoGroup);
+    onInput(input.value);
+    changed();
+  });
+  input.addEventListener("blur", () => undoHistory.endGroup(undoGroup));
   container.append(caption, input);
   return input;
 }
@@ -163,6 +177,7 @@ function renderImage(container, id, label, initialUrl = "") {
     run(async () => {
       validateImage(file);
       const url = await uploadImage(file);
+      rememberChange(`image-upload-${id}-${crypto.randomUUID()}`);
       content.images[id] = { url, alt: current?.alt || "" };
       changed();
       renderEditor(false);
@@ -172,6 +187,7 @@ function renderImage(container, id, label, initialUrl = "") {
   if (current) {
     field(block, `${id}-alt`, "Σύντομη περιγραφή εικόνας (για άτομα που δεν μπορούν να τη δουν)", current.alt, value => { content.images[id].alt = value; }, { maxLength: 500 });
     block.append(button(initialUrl || id === "hero" ? "Επαναφορά αρχικής εικόνας" : "Αφαίρεση εικόνας", () => {
+      rememberChange(`image-remove-${id}-${crypto.randomUUID()}`);
       delete content.images[id];
       changed();
       renderEditor(false);
@@ -208,6 +224,7 @@ async function selectEditor(id) {
 }
 
 function renderEditor(focus = true) {
+  undoHistory.endGroup();
   disposeLibrary?.();
   disposeLibrary = null;
   disposeMembers?.();
@@ -265,6 +282,7 @@ function renderPosts(root) {
     const date = new Date();
     const localDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
     const post = { id: crypto.randomUUID(), section: "nea", title: "", body: "", date: localDate, image: "", alt: "" };
+    rememberChange(`post-add-${post.id}`);
     content.posts.unshift(post);
     changed();
     renderEditor(false);
@@ -277,6 +295,7 @@ function renderPosts(root) {
     const actions = element("div", undefined, "actions");
     actions.append(button("Επεξεργασία", () => editPost(post, root)), button("Διαγραφή", async () => {
       if (await confirmAction("Η ανάρτηση θα αφαιρεθεί όταν δημοσιεύσετε τις αλλαγές. Να συνεχίσουμε;", "Διαγραφή ανάρτησης;")) {
+        rememberChange(`post-delete-${post.id}`);
         content.posts = content.posts.filter(item => item.id !== post.id);
         changed();
         renderEditor(false);
@@ -290,6 +309,7 @@ function renderPosts(root) {
 function editPost(post, root) {
   root.querySelector(".post-form")?.remove();
   const form = element("div", undefined, "post-form");
+  form.dataset.postId = post.id;
   form.append(element("h3", "Επεξεργασία ανάρτησης"));
   const label = element("label", "Πού θα εμφανιστεί;");
   label.htmlFor = "post-section";
@@ -302,6 +322,7 @@ function editPost(post, root) {
   }
   select.value = post.section;
   select.addEventListener("change", () => {
+    rememberChange(`post-section-${post.id}-${crypto.randomUUID()}`);
     post.section = select.value;
     if (activitySections.has(post.section)) {
       post.summary ??= "";
@@ -325,7 +346,11 @@ function editPost(post, root) {
     const registration = element("input");
     registration.type = "checkbox";
     registration.checked = post.registration_open === true;
-    registration.addEventListener("change", () => { post.registration_open = registration.checked; changed(); });
+    registration.addEventListener("change", () => {
+      rememberChange(`post-registration-${post.id}-${crypto.randomUUID()}`);
+      post.registration_open = registration.checked;
+      changed();
+    });
     registrationLabel.append(registration, document.createTextNode(" Οι δηλώσεις συμμετοχής είναι ανοικτές"));
     form.append(registrationLabel, element("p", "Αν το αποεπιλέξετε, η δράση θα παραμένει δημοσιευμένη αλλά η φόρμα συμμετοχής δεν θα εμφανίζεται.", "hint"));
   }
@@ -335,7 +360,13 @@ function editPost(post, root) {
     image.alt = post.alt;
     image.style.maxWidth = "100%";
     image.style.maxHeight = "240px";
-    form.append(image, button("Αφαίρεση φωτογραφίας", () => { post.image = ""; post.alt = ""; changed(); editPost(post, root); }));
+    form.append(image, button("Αφαίρεση φωτογραφίας", () => {
+      rememberChange(`post-image-remove-${post.id}-${crypto.randomUUID()}`);
+      post.image = "";
+      post.alt = "";
+      changed();
+      editPost(post, root);
+    }));
   }
   const upload = element("input");
   upload.type = "file";
@@ -348,7 +379,9 @@ function editPost(post, root) {
   upload.addEventListener("change", () => {
     if (!upload.files[0]) return;
     run(async () => {
-      post.image = await uploadImage(upload.files[0]);
+      const url = await uploadImage(upload.files[0]);
+      rememberChange(`post-image-upload-${post.id}-${crypto.randomUUID()}`);
+      post.image = url;
       changed();
       editPost(post, root);
       message("Η φωτογραφία προστέθηκε στην ανάρτηση. Οι αλλαγές δεν έχουν δημοσιευτεί ακόμη.");
@@ -376,6 +409,7 @@ async function enterWorkspace(session) {
   version = data.version;
   userId = session.user.id;
   dirty = false;
+  undoHistory.clear();
   demo = false;
   await loadDefaults();
   content = normalizeContent(data.document, defaults);
@@ -386,6 +420,7 @@ $("start-demo").addEventListener("click", () => run(async () => {
   demo = true;
   content = emptyContent();
   dirty = false;
+  undoHistory.clear();
   await loadDefaults();
   showWorkspace();
 }));
@@ -435,6 +470,7 @@ $("logout").addEventListener("click", async () => {
       if (error) throw error;
     }
     dirty = false;
+    undoHistory.clear();
     bookDirty = false;
     disposeMembers?.();
     disposeMembers = null;
@@ -460,12 +496,25 @@ $("preview").addEventListener("click", () => {
   }
 });
 $("close-preview").addEventListener("click", () => $("preview-dialog").close());
+$("undo").addEventListener("click", () => {
+  if (!contentEditors() || bookDirty || memberDirty || busy) return;
+  const editingPostId = $("editor").querySelector(".post-form")?.dataset.postId;
+  const previous = undoHistory.undo();
+  if (!previous) return;
+  content = previous.value;
+  dirty = previous.dirty;
+  renderEditor(false);
+  const restoredPost = editingPostId && content.posts.find(post => post.id === editingPostId);
+  if (restoredPost && active === "posts") editPost(restoredPost, $("editor"));
+  message("Η τελευταία αλλαγή αναιρέθηκε. Μπορείτε να συνεχίσετε την επεξεργασία.");
+});
 $("publish").addEventListener("click", async () => {
   if (demo || !dirty || busy) return;
   if (!await confirmAction("Οι αλλαγές σας θα εμφανιστούν δημόσια στην ιστοσελίδα. Να τις δημοσιεύσουμε;", "Δημοσίευση αλλαγών;")) return;
   run(async () => {
     version = await publishContent(content, version);
     dirty = false;
+    undoHistory.clear();
     message("Οι αλλαγές δημοσιεύτηκαν! Μπορείτε τώρα να ανοίξετε την ιστοσελίδα για να τις δείτε.");
   });
 });
