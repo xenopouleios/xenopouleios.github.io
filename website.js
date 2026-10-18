@@ -59,6 +59,18 @@ const revealObserver = !window.matchMedia("(prefers-reduced-motion: reduce)").ma
     }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" })
   : null;
 
+function revealVisibleElements() {
+  document.querySelectorAll(".scroll-reveal:not(.is-visible)").forEach(element => {
+    const bounds = element.getBoundingClientRect();
+    if (bounds.top >= window.innerHeight || bounds.bottom <= 0) return;
+    element.classList.add("is-visible");
+    revealObserver?.unobserve(element);
+  });
+}
+
+window.addEventListener("scroll", revealVisibleElements, { passive: true });
+window.addEventListener("resize", revealVisibleElements);
+
 function observeScrollReveals() {
   const groups = [
     ".hero > *",
@@ -83,6 +95,7 @@ function observeScrollReveals() {
       else element.classList.add("is-visible");
     });
   }
+  revealVisibleElements();
 }
 
 function pageUrl(id = "") {

@@ -25,6 +25,8 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(website, /"activity-card-meta"/);
   assert.match(website, /`Ηλικίες: \$\{post\.age_range\.trim\(\)\}`/);
   assert.match(website, /dateStyle: "medium"/);
+  assert.match(website, /function revealVisibleElements\(\)/);
+  assert.match(website, /bounds\.top >= window\.innerHeight/);
   assert.match(website, /"ΣΥΝΑΝΤΗΣΕΙΣ ΤΟΥ ΔΙΚΤΥΟΥ"/);
 });
 
