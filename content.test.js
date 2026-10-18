@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { activitySections, ageRangeSections, allFields, cardSections, emptyContent, maxImageBytes, navigation, normalizeContent, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
+import { activitySections, ageRangeSections, allFields, cardSections, emptyContent, maxImageBytes, navigation, normalizeContent, requiresEventDate, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
 import { validatePublicConfig } from "./config.js";
 
 const post = () => ({ id: "test-1", section: "nea", title: "Νέα ανακοίνωση", body: "Το κείμενό μας.", date: "2026-10-15", image: "", alt: "" });
@@ -69,6 +69,12 @@ test("activity posts support card summaries and controlled registration", () => 
   assert.equal(normalized.posts[0].activity_period, "upcoming");
   assert.equal(normalized.posts[0].summary, "Αναλυτικό κείμενο παλιότερης δράσης.");
   assert.equal(normalized.posts[0].registration_open, false);
+  assert.equal(requiresEventDate(normalized.posts[0]), true);
+  assert.equal(requiresEventDate({ ...activity, activity_period: "previous" }), false);
+  assert.equal(Object.hasOwn(normalizeContent({ ...content, posts: [{ ...activity, activity_period: "previous" }] }).posts[0], "event_date"), false);
+  assert.equal(requiresEventDate({ ...post(), section: "ekdiloseis" }), true);
+  assert.equal(requiresEventDate({ ...post(), section: "freinet" }), true);
+  assert.equal(requiresEventDate(post()), false);
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, summary: "" }] }));
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, registration_open: "yes" }] }));
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, age_range: "α".repeat(101) }] }));
@@ -81,6 +87,9 @@ test("activity posts support card summaries and controlled registration", () => 
   assert.throws(() => validateContent({ ...freinet, posts: [{ ...freinet.posts[0], registration_open: true }] }));
   assert.throws(() => validateContent({ ...freinet, posts: [{ ...freinet.posts[0], age_range: "α".repeat(101) }] }));
   assert.throws(() => validateContent({ ...freinet, posts: [{ ...freinet.posts[0], event_date: "22/10/2026" }] }));
+  const jointEvent = emptyContent();
+  jointEvent.posts = [{ ...post(), section: "ekdiloseis", event_date: "2026-10-24" }];
+  assert.equal(validateContent(jointEvent), jointEvent);
 });
 
 test("malformed documents and unknown fields are rejected", () => {

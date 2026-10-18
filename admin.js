@@ -1,5 +1,5 @@
 import { client, configured, loadContent, publishContent, uploadImage } from "./cms.js";
-import { activitySections, ageRangeSections, cardSections, emptyContent, homeFields, normalizeContent, readDefaults, sectionFields, sections, validateContent, validateImage } from "./content.js";
+import { activitySections, ageRangeSections, cardSections, emptyContent, homeFields, normalizeContent, readDefaults, requiresEventDate, sectionFields, sections, validateContent, validateImage } from "./content.js";
 import logoUrl from "./logo.png";
 import { mountLibraryAdmin } from "./library-admin.js";
 import { mountMembersAdmin } from "./members-admin.js";
@@ -50,6 +50,11 @@ const adminAreas = [
 let activeArea = "posts";
 const undoHistory = createUndoHistory();
 const contentEditors = () => active === "home" || active === "posts" || active === "activity-archive" || sections.some(([id]) => id === active);
+
+function validateRequiredEventDates() {
+  const missing = content.posts.find(post => requiresEventDate(post) && !post.event_date);
+  if (missing) throw new Error(`Συμπληρώστε ημερομηνία διεξαγωγής στην ανάρτηση «${missing.title || "Χωρίς τίτλο"}».`);
+}
 
 function message(text, kind = "") {
   $("status").textContent = text;
@@ -391,8 +396,8 @@ function editPost(post, root) {
       post.summary ??= "";
     } else {
       delete post.summary;
-      delete post.event_date;
     }
+    if (!requiresEventDate(post)) delete post.event_date;
     if (activitySections.has(post.section)) post.registration_open ??= false;
     else delete post.registration_open;
     if (ageRangeSections.has(post.section)) post.age_range ??= "";
@@ -403,11 +408,11 @@ function editPost(post, root) {
   form.append(label, select);
   field(form, "post-title", "Τίτλος ανάρτησης", post.title, value => { post.title = value; }, { maxLength: 300, required: true });
   field(form, "post-date", "Ημερομηνία ανάρτησης", post.date, value => { post.date = value; }, { type: "date", required: true });
-  if (cardSections.has(post.section)) {
-    field(form, "post-event-date", "Ημερομηνία διεξαγωγής (προαιρετική)", post.event_date ?? "", value => {
+  if (requiresEventDate(post)) {
+    field(form, "post-event-date", "Ημερομηνία διεξαγωγής", post.event_date ?? "", value => {
       if (value) post.event_date = value;
       else delete post.event_date;
-    }, { type: "date" });
+    }, { type: "date", required: true });
   }
   if (ageRangeSections.has(post.section)) {
     field(form, "post-age-range", "Ηλικίες στις οποίες απευθύνεται", post.age_range ?? "", value => { post.age_range = value; }, { maxLength: 100 });
@@ -558,6 +563,7 @@ $("preview").addEventListener("click", () => {
   if (["members", "lending", "activity-registrations", "activity-archive"].includes(active)) return;
   try {
     validateContent(content);
+    validateRequiredEventDates();
     sessionStorage.setItem(`xenopouleio-preview-${previewId}`, JSON.stringify(content));
     const previewSection = active === "books" ? "daneistiki" : active === "posts" ? ($("post-section")?.value || content.posts[0]?.section || "nea").split(":")[0] : active;
     const url = new URL(sections.some(([id]) => id === previewSection) ? `../${previewSection}.html` : "../", location.href);
@@ -586,6 +592,7 @@ $("publish").addEventListener("click", async () => {
   if (demo || !dirty || busy) return;
   if (!await confirmAction("Οι αλλαγές σας θα εμφανιστούν δημόσια στην ιστοσελίδα. Να τις δημοσιεύσουμε;", "Δημοσίευση αλλαγών;")) return;
   run(async () => {
+    validateRequiredEventDates();
     version = await publishContent(content, version);
     dirty = false;
     undoHistory.clear();

@@ -546,8 +546,9 @@ export function renderContent(content) {
     const announcement = post.section === "nea";
     article.className = announcement ? "published-post announcement-card" : "published-post";
     const time = document.createElement("time");
-    time.dateTime = post.date;
-    time.textContent = new Intl.DateTimeFormat("el-GR", { dateStyle: "long", timeZone: "UTC" }).format(new Date(post.date));
+    const displayedDate = post.event_date ?? post.date;
+    time.dateTime = displayedDate;
+    time.textContent = new Intl.DateTimeFormat("el-GR", { dateStyle: "long", timeZone: "UTC" }).format(new Date(displayedDate));
     const title = document.createElement("h3");
     title.textContent = post.title;
     if (announcement) article.append(title, time);
