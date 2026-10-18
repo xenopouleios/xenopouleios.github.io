@@ -1,5 +1,5 @@
 import { client, configured, loadContent, publishContent, uploadImage } from "./cms.js";
-import { activitySections, cardSections, emptyContent, homeFields, normalizeContent, readDefaults, sectionFields, sections, validateContent, validateImage } from "./content.js";
+import { activitySections, ageRangeSections, cardSections, emptyContent, homeFields, normalizeContent, readDefaults, sectionFields, sections, validateContent, validateImage } from "./content.js";
 import logoUrl from "./logo.png";
 import { mountLibraryAdmin } from "./library-admin.js";
 import { mountMembersAdmin } from "./members-admin.js";
@@ -328,15 +328,15 @@ function editPost(post, root) {
     else delete post.summary;
     if (activitySections.has(post.section)) post.registration_open ??= false;
     else delete post.registration_open;
-    if (post.section === "draseis-paidia") post.age_range ??= "";
+    if (ageRangeSections.has(post.section)) post.age_range ??= "";
     else delete post.age_range;
     changed();
     editPost(post, root);
   });
   form.append(label, select);
   field(form, "post-title", "Τίτλος ανάρτησης", post.title, value => { post.title = value; }, { maxLength: 300, required: true });
-  field(form, "post-date", activitySections.has(post.section) ? "Ημερομηνία διεξαγωγής" : "Ημερομηνία", post.date, value => { post.date = value; }, { type: "date", required: true });
-  if (post.section === "draseis-paidia") {
+  field(form, "post-date", cardSections.has(post.section) ? "Ημερομηνία διεξαγωγής" : "Ημερομηνία", post.date, value => { post.date = value; }, { type: "date", required: true });
+  if (ageRangeSections.has(post.section)) {
     field(form, "post-age-range", "Ηλικίες στις οποίες απευθύνεται", post.age_range ?? "", value => { post.age_range = value; }, { maxLength: 100 });
   }
   if (cardSections.has(post.section)) {

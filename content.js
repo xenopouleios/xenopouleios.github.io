@@ -26,6 +26,7 @@ export const navigation = [
 ];
 export const activitySections = new Set(["draseis-paidia", "draseis-enilikes"]);
 export const cardSections = new Set([...activitySections, "freinet"]);
+export const ageRangeSections = new Set(["draseis-paidia", "freinet"]);
 const hiddenNavigationSections = new Set(["stigmes-draseon"]);
 
 export const homeFields = [
@@ -128,7 +129,7 @@ export function validateContent(content) {
     if (typeof post.image !== "string") throw new Error("Μη έγκυρη φωτογραφία ανάρτησης.");
     if (post.summary !== undefined && (!cardSections.has(post.section) || typeof post.summary !== "string" || !post.summary.trim() || post.summary.length > 500)) throw new Error("Μη έγκυρη σύντομη περιγραφή κάρτας.");
     if (post.registration_open !== undefined && (!activitySections.has(post.section) || typeof post.registration_open !== "boolean")) throw new Error("Μη έγκυρη κατάσταση συμμετοχών.");
-    if (post.age_range !== undefined && (post.section !== "draseis-paidia" || typeof post.age_range !== "string" || post.age_range.length > 100)) throw new Error("Μη έγκυρες ηλικίες δράσης.");
+    if (post.age_range !== undefined && (!ageRangeSections.has(post.section) || typeof post.age_range !== "string" || post.age_range.length > 100)) throw new Error("Μη έγκυρες ηλικίες δράσης.");
     safeImageUrl(post.image);
   }
   return content;

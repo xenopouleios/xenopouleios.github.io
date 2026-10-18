@@ -41,6 +41,7 @@ test("activity publishing controls summaries and registration availability", () 
   assert.match(admin, /Οι δηλώσεις συμμετοχής είναι ανοικτές/);
   assert.match(admin, /"Ημερομηνία διεξαγωγής"/);
   assert.match(admin, /"Ηλικίες στις οποίες απευθύνεται"/);
+  assert.match(admin, /ageRangeSections\.has\(post\.section\)/);
   assert.match(admin, /mountActivityAdmin/);
   assert.match(privateAdmin, /activity_registrations/);
   assert.match(privateAdmin, /activity_registration_delete/);

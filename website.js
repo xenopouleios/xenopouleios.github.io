@@ -1,5 +1,5 @@
 import { client, configured, loadContent } from "./cms.js";
-import { activitySections, allFields, cardSections, normalizeContent, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
+import { activitySections, ageRangeSections, allFields, cardSections, normalizeContent, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
 import { mountMemberPortal } from "./member-portal.js";
 import { mountBlogArchive } from "./blog-archive.js";
 import friendsLogoUrl from "./friends-logo.png";
@@ -475,20 +475,16 @@ export function renderContent(content) {
     if (cardSections.has(post.section)) {
       const period = activitySections.has(post.section) ? "upcoming" : "all";
       const grid = cardGrid(post.section, period);
-      if (period === "upcoming" && activitySections.has(post.section)) {
-        const card = createActivityCard(post, activityUrl(post.id), post.section === "freinet" ? "✳" : "Ξ");
-        const meta = createNode("div", undefined, "activity-card-meta");
-        if (post.section === "draseis-paidia" && post.age_range?.trim()) {
-          meta.append(createNode("span", `Ηλικίες: ${post.age_range.trim()}`));
-        }
-        const eventDate = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(post.date)));
-        eventDate.dateTime = post.date;
-        meta.append(eventDate);
-        card.prepend(meta);
-        grid.append(card);
-      } else {
-        grid.append(createActivityCard(post, activityUrl(post.id), post.section === "freinet" ? "✳" : "Ξ"));
+      const card = createActivityCard(post, activityUrl(post.id), post.section === "freinet" ? "✳" : "Ξ");
+      const meta = createNode("div", undefined, "activity-card-meta");
+      if (ageRangeSections.has(post.section) && post.age_range?.trim()) {
+        meta.append(createNode("span", `Ηλικίες: ${post.age_range.trim()}`));
       }
+      const eventDate = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(post.date)));
+      eventDate.dateTime = post.date;
+      meta.append(eventDate);
+      card.prepend(meta);
+      grid.append(card);
       continue;
     }
     const article = document.createElement("article");

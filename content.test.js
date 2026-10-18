@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { activitySections, allFields, cardSections, emptyContent, maxImageBytes, navigation, normalizeContent, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
+import { activitySections, ageRangeSections, allFields, cardSections, emptyContent, maxImageBytes, navigation, normalizeContent, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
 import { validatePublicConfig } from "./config.js";
 
 const post = () => ({ id: "test-1", section: "nea", title: "Νέα ανακοίνωση", body: "Το κείμενό μας.", date: "2026-10-15", image: "", alt: "" });
@@ -59,6 +59,7 @@ test("activity posts support card summaries and controlled registration", () => 
   assert.equal(validateContent(content), content);
   assert.deepEqual(activitySections, new Set(["draseis-paidia", "draseis-enilikes"]));
   assert.deepEqual(cardSections, new Set(["draseis-paidia", "draseis-enilikes", "freinet"]));
+  assert.deepEqual(ageRangeSections, new Set(["draseis-paidia", "freinet"]));
   const legacy = emptyContent();
   legacy.posts = [{ ...post(), section: "draseis-enilikes", body: "Αναλυτικό κείμενο παλιότερης δράσης." }];
   const normalized = normalizeContent(legacy);
@@ -69,9 +70,11 @@ test("activity posts support card summaries and controlled registration", () => 
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, age_range: "α".repeat(101) }] }));
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, section: "draseis-enilikes" }] }));
   const freinet = emptyContent();
-  freinet.posts = [{ ...post(), section: "freinet", body: "Αναλυτικό κείμενο του Δικτύου Freinet." }];
+  freinet.posts = [{ ...post(), section: "freinet", body: "Αναλυτικό κείμενο του Δικτύου Freinet.", age_range: "Εκπαιδευτικοί και γονείς" }];
+  assert.equal(validateContent(freinet), freinet);
   assert.equal(normalizeContent(freinet).posts[0].summary, "Αναλυτικό κείμενο του Δικτύου Freinet.");
   assert.throws(() => validateContent({ ...freinet, posts: [{ ...freinet.posts[0], registration_open: true }] }));
+  assert.throws(() => validateContent({ ...freinet, posts: [{ ...freinet.posts[0], age_range: "α".repeat(101) }] }));
 });
 
 test("malformed documents and unknown fields are rejected", () => {
