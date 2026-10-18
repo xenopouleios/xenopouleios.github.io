@@ -205,7 +205,7 @@ async function mountPreviousActivityArchive(activityGrids) {
         throw new Error("Μη έγκυρη προηγούμενη δράση.");
       }
       const card = createActivityCard(post, activityUrl(post.id));
-      card.dataset.activityDate = post.date;
+      card.dataset.activityDate = post.event_date ?? post.date;
       grid.append(card);
     }
     sortActivityGrid(grid, false);

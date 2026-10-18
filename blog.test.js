@@ -12,7 +12,8 @@ test("blog import sanitizes complete Blogger posts", () => {
   assert.match(importer, /posts\.length !== total/);
   assert.match(importer, /blog-archive\.json/);
   assert.match(importer, /activity-archive-\$\{audience\}\.json/);
-  assert.match(importer, /\{ id, title, date, content, summary, image, originalUrl \}/);
+  assert.match(importer, /function eventDateFromTitle\(title, publishedDate\)/);
+  assert.match(importer, /event_date: eventDate/);
   assert.match(importer, /classifyAudience\(title\)/);
 });
 

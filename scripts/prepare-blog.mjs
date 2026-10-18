@@ -15,6 +15,17 @@ function classifyAudience(title) {
   return adultTerms.test(normalizedTitle) ? "adults" : "children";
 }
 
+function eventDateFromTitle(title, publishedDate) {
+  const matches = [...title.matchAll(/(?:^|\D)(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})(?!\d)/g)];
+  const match = matches.at(-1);
+  if (!match) return publishedDate;
+  const year = match[3].length === 2 ? `20${match[3]}` : match[3];
+  const eventDate = `${year}-${match[2].padStart(2, "0")}-${match[1].padStart(2, "0")}`;
+  return Number.isFinite(Date.parse(eventDate)) && new Date(eventDate).toISOString().slice(0, 10) === eventDate
+    ? eventDate
+    : publishedDate;
+}
+
 function cleanContent(html) {
   return sanitizeHtml(html, {
     allowedTags: [
@@ -67,10 +78,12 @@ function postFromEntry(entry) {
   const content = cleanContent(rawContent);
   const image = content.match(/<img[^>]+src="([^"]+)"/i)?.[1]?.replaceAll("&amp;", "&") || "";
   const title = entry.title?.$t?.trim() || plainText.slice(0, 100) || `Δημοσίευση ${published.slice(0, 10)}`;
+  const date = published.slice(0, 10);
   return {
     id,
     title,
-    date: published.slice(0, 10),
+    date,
+    eventDate: eventDateFromTitle(title, date),
     content,
     summary: plainText.slice(0, 240),
     image,
@@ -125,7 +138,7 @@ await writeFile(resolve(outputDirectory, "blog-archive.json"), JSON.stringify({
 for (const audience of ["children", "adults"]) {
   await writeFile(resolve(outputDirectory, `activity-archive-${audience}.json`), JSON.stringify({
     generatedAt: new Date().toISOString(),
-    posts: posts.filter(post => post.audience === audience).map(({ id, title, date, content, summary, image, originalUrl }) => ({ id, title, date, content, summary, image, originalUrl })),
+    posts: posts.filter(post => post.audience === audience).map(({ id, title, date, eventDate, content, summary, image, originalUrl }) => ({ id, title, date, event_date: eventDate, content, summary, image, originalUrl })),
   }));
 }
 console.log(`Prepared ${posts.length} Blogger posts in ${chunks.length} pages.`);
