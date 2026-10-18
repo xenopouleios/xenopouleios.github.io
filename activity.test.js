@@ -24,6 +24,9 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(website, /"activity-carousel-next"/);
   assert.match(website, /mountPreviousActivityArchive\(activityGrids\)/);
   assert.match(website, /activity-archive-\$\{audience\}\.json/);
+  assert.match(website, /createActivityCard\(post, activityUrl\(post\.id\)\)/);
+  assert.match(website, /async function loadArchivedActivity\(id\)/);
+  assert.match(website, /archivedContent\.innerHTML = post\.content/);
   assert.match(website, /"activity-card-meta"/);
   assert.match(website, /`Ηλικίες: \$\{post\.age_range\.trim\(\)\}`/);
   assert.match(website, /dateStyle: "medium"/);

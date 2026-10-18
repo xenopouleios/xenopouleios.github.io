@@ -196,7 +196,7 @@ async function mountPreviousActivityArchive(activityGrids) {
       if (!post || !["title", "summary", "image", "originalUrl"].every(field => typeof post[field] === "string")) {
         throw new Error("Μη έγκυρη προηγούμενη δράση.");
       }
-      grid.append(createActivityCard(post, post.originalUrl));
+      grid.append(createActivityCard(post, activityUrl(post.id)));
     }
     grid.dispatchEvent(new Event("cardschange"));
     observeScrollReveals();
@@ -270,12 +270,41 @@ function activityRegistrationForm(post) {
   return section;
 }
 
-function renderActivityDetail(posts) {
+async function loadArchivedActivity(id) {
+  const archives = await Promise.all([
+    ["children", "draseis-paidia"],
+    ["adults", "draseis-enilikes"],
+  ].map(async ([audience, section]) => {
+    const response = await fetch(new URL(`./activity-archive-${audience}.json`, location.href));
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const archive = await response.json();
+    if (!Array.isArray(archive.posts)) throw new Error("Μη έγκυρο αρχείο προηγούμενων δράσεων.");
+    return archive.posts.map(post => ({ ...post, section, archived: true }));
+  }));
+  const post = archives.flat().find(item => item.id === id);
+  if (post && !["title", "date", "content", "image"].every(field => typeof post[field] === "string")) {
+    throw new Error("Μη έγκυρη προηγούμενη δράση.");
+  }
+  return post;
+}
+
+async function renderActivityDetail(posts) {
   if (!activityPage) return;
   const root = document.querySelector("#activity-detail");
   root.hidden = false;
   const id = new URL(location.href).searchParams.get("id");
-  const post = posts.find(item => item.id === id && cardSections.has(item.section));
+  root.replaceChildren(createNode("p", "Φόρτωση δράσης…"));
+  let post = posts.find(item => item.id === id && cardSections.has(item.section));
+  if (!post && id) {
+    try {
+      post = await loadArchivedActivity(id);
+    } catch (error) {
+      console.error("Archived activity loading failed", error);
+      root.replaceChildren(createNode("h1", "Δεν ήταν δυνατή η φόρτωση της δράσης"), createNode("p", "Δοκιμάστε ξανά σε λίγο."));
+      document.title = "Σφάλμα φόρτωσης — Ξενοπούλειο";
+      return;
+    }
+  }
   if (!post) {
     root.replaceChildren(createNode("h1", "Η ανάρτηση δεν βρέθηκε"), createNode("p", "Η ανάρτηση μπορεί να έχει αφαιρεθεί ή η διεύθυνση να μην είναι σωστή."));
     document.title = "Η ανάρτηση δεν βρέθηκε — Ξενοπούλειο";
@@ -289,13 +318,19 @@ function renderActivityDetail(posts) {
   const title = createNode("h1", post.title);
   article.append(time, title);
   const activityContent = createNode("div", undefined, "activity-content");
-  if (post.image) {
-    const image = createNode("img", undefined, "activity-hero-image");
-    image.src = safeImageUrl(post.image);
-    image.alt = post.alt;
-    activityContent.append(image);
+  if (post.archived) {
+    const archivedContent = createNode("div", undefined, "activity-full-text activity-archive-content");
+    archivedContent.innerHTML = post.content;
+    activityContent.append(archivedContent);
+  } else {
+    if (post.image) {
+      const image = createNode("img", undefined, "activity-hero-image");
+      image.src = safeImageUrl(post.image);
+      image.alt = post.alt;
+      activityContent.append(image);
+    }
+    activityContent.append(createNode("p", post.body, "activity-full-text"));
   }
-  activityContent.append(createNode("p", post.body, "activity-full-text"));
   article.append(activityContent);
   if (activitySections.has(post.section)) article.append(activityRegistrationForm(post));
   root.replaceChildren(back, article);

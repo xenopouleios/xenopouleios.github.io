@@ -125,7 +125,7 @@ await writeFile(resolve(outputDirectory, "blog-archive.json"), JSON.stringify({
 for (const audience of ["children", "adults"]) {
   await writeFile(resolve(outputDirectory, `activity-archive-${audience}.json`), JSON.stringify({
     generatedAt: new Date().toISOString(),
-    posts: posts.filter(post => post.audience === audience).map(({ id, title, date, summary, image, originalUrl }) => ({ id, title, date, summary, image, originalUrl })),
+    posts: posts.filter(post => post.audience === audience).map(({ id, title, date, content, summary, image, originalUrl }) => ({ id, title, date, content, summary, image, originalUrl })),
   }));
 }
 console.log(`Prepared ${posts.length} Blogger posts in ${chunks.length} pages.`);

@@ -189,11 +189,16 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .activity-detail { min-height: 65vh; padding-block: 20px 70px; }
 .activity-article { max-width: 1050px; margin: 20px auto 0; }
 .activity-article > time { display: block; margin-bottom: 14px; color: var(--muted); font-size: 13px; }
-.activity-article > h1 { margin: 0 0 30px; font: bold clamp(28px, 3vw, 42px)/1.1 var(--serif); white-space: nowrap; }
+.activity-article > h1 { margin: 0 0 30px; font: bold clamp(28px, 3vw, 42px)/1.1 var(--serif); }
 .activity-content { display: grid; grid-template-columns: minmax(230px, 320px) minmax(0, 1fr); gap: 40px; align-items: start; }
 .activity-content:not(:has(.activity-hero-image)) { grid-template-columns: 1fr; }
 .activity-hero-image { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: contain; background: #f1ecdf; }
 .activity-full-text { margin: 0; white-space: pre-line; overflow-wrap: anywhere; text-align: justify; line-height: 1.85; }
+.activity-archive-content { white-space: normal; }
+.activity-archive-content img { max-width: 100%; height: auto; }
+.activity-archive-content a { color: var(--terracotta); text-decoration: underline; text-underline-offset: 4px; }
+.activity-archive-content table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.activity-archive-content td, .activity-archive-content th { padding: 8px; border: 1px solid var(--line); }
 .activity-registration { margin-top: 44px; padding: 28px; border-left: 5px solid var(--terracotta); background: #fffdf6; }
 .activity-registration h2 { margin-top: 0; }
 .activity-registration-form { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
