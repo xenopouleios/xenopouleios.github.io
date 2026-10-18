@@ -20,9 +20,13 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(website, /"activity-content"/);
   assert.match(website, /"ΠΡΟΣΕΧΩΣ"/);
   assert.match(website, /"ΠΡΟΗΓΟΥΜΕΝΕΣ ΔΡΑΣΕΙΣ"/);
-  assert.match(website, /const period = activitySections\.has\(post\.section\) \? "upcoming" : "all"/);
   assert.match(website, /viewport\.scrollBy/);
   assert.match(website, /"activity-carousel-next"/);
+  assert.match(website, /"Δείτε όλες"/);
+  assert.match(website, /function sortActivityGrid\(grid, ascending\)/);
+  assert.match(website, /post\.event_date >= today \? "upcoming" : "previous"/);
+  assert.match(website, /sortActivityGrid\(grid, period === "upcoming"\)/);
+  assert.match(website, /sortActivityGrid\(grid, false\)/);
   assert.match(website, /mountPreviousActivityArchive\(activityGrids\)/);
   assert.match(website, /activity-archive-\$\{audience\}\.json/);
   assert.match(website, /createActivityCard\(post, activityUrl\(post\.id\)\)/);
@@ -37,6 +41,7 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(styles, /\.detail > \* \{ min-width: 0; \}/);
   assert.match(styles, /\.detail \{ grid-template-columns: minmax\(0, 1fr\);/);
   assert.match(styles, /\.activity-carousel \{ min-width: 0; max-width: 100%;/);
+  assert.match(styles, /\.activity-listing\.is-expanded \.activity-cards/);
 });
 
 test("activity publishing controls summaries and registration availability", () => {

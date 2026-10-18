@@ -183,6 +183,14 @@ function createActivityCard(post, href, placeholder = "Ξ") {
   return card;
 }
 
+function sortActivityGrid(grid, ascending) {
+  const cards = [...grid.querySelectorAll(".activity-card")];
+  cards.sort((a, b) => ascending
+    ? a.dataset.activityDate.localeCompare(b.dataset.activityDate)
+    : b.dataset.activityDate.localeCompare(a.dataset.activityDate));
+  grid.append(...cards);
+}
+
 async function mountPreviousActivityArchive(activityGrids) {
   if (!activitySections.has(activePage)) return;
   try {
@@ -193,11 +201,14 @@ async function mountPreviousActivityArchive(activityGrids) {
     if (!Array.isArray(archive.posts)) throw new Error("Μη έγκυρο αρχείο προηγούμενων δράσεων.");
     const grid = activityGrids.get(`${activePage}:previous`);
     for (const post of archive.posts) {
-      if (!post || !["title", "summary", "image", "originalUrl"].every(field => typeof post[field] === "string")) {
+      if (!post || !["title", "date", "summary", "image", "originalUrl"].every(field => typeof post[field] === "string")) {
         throw new Error("Μη έγκυρη προηγούμενη δράση.");
       }
-      grid.append(createActivityCard(post, activityUrl(post.id)));
+      const card = createActivityCard(post, activityUrl(post.id));
+      card.dataset.activityDate = post.date;
+      grid.append(card);
     }
+    sortActivityGrid(grid, false);
     grid.dispatchEvent(new Event("cardschange"));
     observeScrollReveals();
   } catch (error) {
@@ -447,9 +458,14 @@ export function renderContent(content) {
     const next = createNode("button", "→", "activity-carousel-next");
     next.type = "button";
     next.setAttribute("aria-label", `Επόμενες κάρτες: ${headingText.toLocaleLowerCase("el-GR")}`);
+    const showAll = createNode("button", "Δείτε όλες", "activity-show-all");
+    showAll.type = "button";
+    showAll.setAttribute("aria-expanded", "false");
     const updateNext = () => {
-      next.hidden = viewport.scrollWidth <= viewport.clientWidth + 1;
+      const expanded = listing.classList.contains("is-expanded");
+      next.hidden = expanded || viewport.scrollWidth <= viewport.clientWidth + 1;
       next.disabled = Math.ceil(viewport.scrollLeft + viewport.clientWidth) >= viewport.scrollWidth - 1;
+      showAll.hidden = grid.children.length < 2;
     };
     next.addEventListener("click", () => {
       viewport.scrollBy({
@@ -459,8 +475,17 @@ export function renderContent(content) {
     });
     viewport.addEventListener("scroll", updateNext, { passive: true });
     grid.addEventListener("cardschange", () => requestAnimationFrame(updateNext));
+    showAll.addEventListener("click", () => {
+      const expanded = listing.classList.toggle("is-expanded");
+      showAll.setAttribute("aria-expanded", String(expanded));
+      showAll.textContent = expanded ? "Σύμπτυξη" : "Δείτε όλες";
+      if (!expanded) viewport.scrollTo({ left: 0, behavior: "auto" });
+      requestAnimationFrame(updateNext);
+    });
     new ResizeObserver(updateNext).observe(viewport);
-    headingRow.append(heading, next);
+    const actions = createNode("div", undefined, "activity-listing-actions");
+    actions.append(showAll, next);
+    headingRow.append(heading, actions);
     listing.append(headingRow, viewport);
     document.querySelector(`#${section}`).append(listing);
     activityGrids.set(key, grid);
@@ -472,11 +497,16 @@ export function renderContent(content) {
     cardGrid(section, "upcoming");
     cardGrid(section, "previous");
   }
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   for (const post of [...content.posts].sort((a, b) => b.date.localeCompare(a.date))) {
     if (cardSections.has(post.section)) {
-      const period = activitySections.has(post.section) ? "upcoming" : "all";
+      const period = activitySections.has(post.section)
+        ? post.event_date >= today ? "upcoming" : "previous"
+        : "all";
       const grid = cardGrid(post.section, period);
       const card = createActivityCard(post, activityUrl(post.id), post.section === "freinet" ? "✳" : "Ξ");
+      card.dataset.activityDate = post.event_date;
       const meta = createNode("div", undefined, "activity-card-meta");
       if (ageRangeSections.has(post.section) && post.age_range?.trim()) {
         meta.append(createNode("span", post.age_range.trim()));
@@ -486,6 +516,8 @@ export function renderContent(content) {
       meta.append(eventDate);
       card.prepend(meta);
       grid.append(card);
+      sortActivityGrid(grid, period === "upcoming");
+      grid.dispatchEvent(new Event("cardschange"));
       continue;
     }
     const article = document.createElement("article");

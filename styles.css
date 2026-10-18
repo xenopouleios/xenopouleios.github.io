@@ -168,6 +168,10 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .activity-listing { grid-column: 1 / -1; margin-top: 34px; padding-top: 30px; border-top: 2px solid #bb9673; }
 .activity-listing-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
 .activity-listing-heading > h3 { margin: 0; color: var(--terracotta); font: bold 23px/1.3 var(--serif); letter-spacing: 1.5px; }
+.activity-listing-actions { display: flex; align-items: center; gap: 12px; }
+.activity-show-all { padding: 9px 12px; border: 1px solid var(--terracotta); border-radius: 3px; background: transparent; color: var(--terracotta); font: bold 11px/1 Arial, sans-serif; cursor: pointer; white-space: nowrap; }
+.activity-show-all:hover { background: var(--terracotta); color: white; }
+.activity-show-all[hidden] { display: none; }
 .activity-carousel { min-width: 0; max-width: 100%; overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .activity-carousel::-webkit-scrollbar { display: none; }
 .activity-carousel-next { display: grid; place-items: center; flex: 0 0 auto; width: 42px; height: 42px; padding: 0; border: 1px solid var(--terracotta); border-radius: 50%; background: transparent; color: var(--terracotta); font: 25px/1 Arial, sans-serif; cursor: pointer; transition: background .2s, color .2s, opacity .2s; }
@@ -175,6 +179,8 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .activity-carousel-next:disabled { cursor: default; opacity: .35; }
 .activity-carousel-next[hidden] { display: none; }
 .activity-cards { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 48px) / 4); gap: 16px; }
+.activity-listing.is-expanded .activity-carousel { overflow: visible; scroll-snap-type: none; }
+.activity-listing.is-expanded .activity-cards { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .activity-card { display: flex; flex-direction: column; min-width: 0; width: 100%; border: 1px solid var(--line); background: #fffdf6; color: inherit; text-decoration: none; scroll-snap-align: start; transition: transform .2s, box-shadow .2s, border-color .2s; }
 .activity-card:hover { transform: translateY(-3px); border-color: #bb9673; box-shadow: 0 8px 20px #293e3417; }
 .activity-card-meta { display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 7px 10px; border-bottom: 1px solid #293e3412; background: #e7ecdf; color: #536457; font-size: 10px; line-height: 1.3; }
@@ -243,6 +249,7 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
   h3 { font-size: 22px; }
   .section-heading { align-items: flex-start; flex-direction: column; gap: 13px; }
   .activity-cards { grid-auto-columns: calc((100% - 32px) / 3); }
+  .activity-listing.is-expanded .activity-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
   html { scroll-padding-top: 24px; }
@@ -276,7 +283,10 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
   .detail-media:empty { display: none; }
   .announcement-card { padding: 24px; }
   .announcement-content { grid-template-columns: minmax(110px, 150px) minmax(0, 1fr); gap: 20px; }
+  .activity-listing-heading { align-items: flex-start; flex-wrap: wrap; }
+  .activity-listing-actions { margin-left: auto; }
   .activity-cards { grid-auto-columns: calc((100% - 16px) / 2); }
+  .activity-listing.is-expanded .activity-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .activity-registration-form { grid-template-columns: 1fr; }
   .activity-content { grid-template-columns: 1fr; gap: 26px; }
   .activity-hero-image { width: min(100%, 420px); margin-inline: auto; }
@@ -297,6 +307,7 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
   .announcement-content { grid-template-columns: 1fr; }
   .announcement-content > .content-image { max-height: 260px; }
   .activity-cards { grid-auto-columns: 100%; }
+  .activity-listing.is-expanded .activity-cards { grid-template-columns: minmax(0, 1fr); }
   .card-icon { margin-block: 20px 15px; }
 }
 @media (prefers-reduced-motion: reduce) {
