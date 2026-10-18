@@ -157,6 +157,56 @@ function createNode(tag, text, className) {
   return node;
 }
 
+function createActivityCard(post, href, placeholder = "Ξ") {
+  const card = createNode("a", undefined, "activity-card");
+  card.href = href;
+  if (href.startsWith("http")) {
+    card.target = "_blank";
+    card.rel = "noopener noreferrer";
+  }
+  if (post.image) {
+    const image = createNode("img");
+    image.src = safeImageUrl(post.image);
+    image.alt = post.alt || "";
+    image.loading = "lazy";
+    card.append(image);
+  } else {
+    card.append(createNode("div", placeholder, "activity-card-placeholder"));
+  }
+  const copy = createNode("div", undefined, "activity-card-copy");
+  copy.append(
+    createNode("h3", post.title),
+    createNode("p", post.summary),
+    createNode("span", "Διαβάστε περισσότερα →", "activity-card-link"),
+  );
+  card.append(copy);
+  return card;
+}
+
+async function mountPreviousActivityArchive(activityGrids) {
+  if (!activitySections.has(activePage)) return;
+  try {
+    const audience = activePage === "draseis-paidia" ? "children" : "adults";
+    const response = await fetch(new URL(`./activity-archive-${audience}.json`, location.href));
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const archive = await response.json();
+    if (!Array.isArray(archive.posts)) throw new Error("Μη έγκυρο αρχείο προηγούμενων δράσεων.");
+    const grid = activityGrids.get(`${activePage}:previous`);
+    for (const post of archive.posts) {
+      if (!post || !["title", "summary", "image", "originalUrl"].every(field => typeof post[field] === "string")) {
+        throw new Error("Μη έγκυρη προηγούμενη δράση.");
+      }
+      grid.append(createActivityCard(post, post.originalUrl));
+    }
+    grid.dispatchEvent(new Event("cardschange"));
+    observeScrollReveals();
+  } catch (error) {
+    console.error("Previous activity archive loading failed", error);
+    const grid = activityGrids.get(`${activePage}:previous`);
+    grid.replaceChildren(createNode("p", "Δεν ήταν δυνατή η φόρτωση των προηγούμενων δράσεων.", "activity-archive-error"));
+  }
+}
+
 function activityRegistrationForm(post) {
   const childActivity = post.section === "draseis-paidia";
   const section = createNode("section", undefined, "activity-registration");
@@ -342,12 +392,6 @@ export function renderContent(content) {
       else document.querySelector(`#${id} .detail-media`).append(img);
     }
   }
-  const now = new Date();
-  const today = [
-    now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, "0"),
-    String(now.getDate()).padStart(2, "0"),
-  ].join("-");
   const activityGrids = new Map();
   function cardGrid(section, period = "all") {
     const key = `${section}:${period}`;
@@ -378,6 +422,7 @@ export function renderContent(content) {
       });
     });
     viewport.addEventListener("scroll", updateNext, { passive: true });
+    grid.addEventListener("cardschange", () => requestAnimationFrame(updateNext));
     new ResizeObserver(updateNext).observe(viewport);
     headingRow.append(heading, next);
     listing.append(headingRow, viewport);
@@ -391,23 +436,12 @@ export function renderContent(content) {
     cardGrid(section, "upcoming");
     cardGrid(section, "previous");
   }
-  const upcomingActivities = content.posts
-    .filter(post => activitySections.has(post.section) && post.date >= today)
-    .sort((a, b) => a.date.localeCompare(b.date));
-  const previousActivities = content.posts
-    .filter(post => activitySections.has(post.section) && post.date < today)
-    .sort((a, b) => b.date.localeCompare(a.date));
-  const otherPosts = content.posts
-    .filter(post => !activitySections.has(post.section))
-    .sort((a, b) => b.date.localeCompare(a.date));
-
-  for (const post of [...upcomingActivities, ...previousActivities, ...otherPosts]) {
+  for (const post of [...content.posts].sort((a, b) => b.date.localeCompare(a.date))) {
     if (cardSections.has(post.section)) {
-      const period = activitySections.has(post.section) ? (post.date >= today ? "upcoming" : "previous") : "all";
+      const period = activitySections.has(post.section) ? "upcoming" : "all";
       const grid = cardGrid(post.section, period);
-      const card = createNode("a", undefined, "activity-card");
-      card.href = activityUrl(post.id);
       if (period === "upcoming" && activitySections.has(post.section)) {
+        const card = createActivityCard(post, activityUrl(post.id), post.section === "freinet" ? "✳" : "Ξ");
         const meta = createNode("div", undefined, "activity-card-meta");
         if (post.section === "draseis-paidia" && post.age_range?.trim()) {
           meta.append(createNode("span", `Ηλικίες: ${post.age_range.trim()}`));
@@ -415,24 +449,11 @@ export function renderContent(content) {
         const eventDate = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(post.date)));
         eventDate.dateTime = post.date;
         meta.append(eventDate);
-        card.append(meta);
-      }
-      if (post.image) {
-        const image = createNode("img");
-        image.src = safeImageUrl(post.image);
-        image.alt = post.alt;
-        image.loading = "lazy";
-        card.append(image);
+        card.prepend(meta);
+        grid.append(card);
       } else {
-        card.append(createNode("div", post.section === "freinet" ? "✳" : "Ξ", "activity-card-placeholder"));
+        grid.append(createActivityCard(post, activityUrl(post.id), post.section === "freinet" ? "✳" : "Ξ"));
       }
-      const copy = createNode("div", undefined, "activity-card-copy");
-      const title = createNode("h3", post.title);
-      const summary = createNode("p", post.summary);
-      const link = createNode("span", "Διαβάστε περισσότερα →", "activity-card-link");
-      copy.append(title, summary, link);
-      card.append(copy);
-      grid.append(card);
       continue;
     }
     const article = document.createElement("article");
@@ -480,6 +501,7 @@ export function renderContent(content) {
     }
     document.querySelector(`#${post.section} h2`).parentElement.append(article);
   }
+  mountPreviousActivityArchive(activityGrids);
   renderActivityDetail(content.posts);
   observeScrollReveals();
   updateTitle();

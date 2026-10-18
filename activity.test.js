@@ -9,7 +9,7 @@ const database = await readFile(new URL("./supabase/activities.sql", import.meta
 
 test("activity cards link to details with category-specific registration forms", () => {
   assert.match(website, /"Διαβάστε περισσότερα →"/);
-  assert.match(website, /createNode\("a", undefined, "activity-card"\)/);
+  assert.match(website, /function createActivityCard\(post, href/);
   assert.match(website, /\["child_name", "Ονοματεπώνυμο παιδιού"/);
   assert.match(website, /\["guardian_name", "Ονοματεπώνυμο γονέα"/);
   assert.match(website, /\["full_name", "Ονοματεπώνυμο"/);
@@ -19,9 +19,11 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(website, /"activity-content"/);
   assert.match(website, /"ΠΡΟΣΕΧΩΣ"/);
   assert.match(website, /"ΠΡΟΗΓΟΥΜΕΝΕΣ ΔΡΑΣΕΙΣ"/);
-  assert.match(website, /post\.date >= today/);
+  assert.match(website, /const period = activitySections\.has\(post\.section\) \? "upcoming" : "all"/);
   assert.match(website, /viewport\.scrollBy/);
   assert.match(website, /"activity-carousel-next"/);
+  assert.match(website, /mountPreviousActivityArchive\(activityGrids\)/);
+  assert.match(website, /activity-archive-\$\{audience\}\.json/);
   assert.match(website, /"activity-card-meta"/);
   assert.match(website, /`Ηλικίες: \$\{post\.age_range\.trim\(\)\}`/);
   assert.match(website, /dateStyle: "medium"/);

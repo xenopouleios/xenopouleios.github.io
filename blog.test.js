@@ -11,6 +11,8 @@ test("blog import sanitizes complete Blogger posts", () => {
   assert.match(importer, /allowedSchemes: \["http", "https", "mailto"\]/);
   assert.match(importer, /posts\.length !== total/);
   assert.match(importer, /blog-archive\.json/);
+  assert.match(importer, /activity-archive-\$\{audience\}\.json/);
+  assert.match(importer, /classifyAudience\(title\)/);
 });
 
 test("blog archive renders full posts in bounded pages", () => {

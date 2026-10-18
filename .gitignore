@@ -2,6 +2,7 @@ node_modules/
 dist/
 public/blog-archive.json
 public/blog-archive-*.json
+public/activity-archive-*.json
 .env
 .env.local
 .env.*.local

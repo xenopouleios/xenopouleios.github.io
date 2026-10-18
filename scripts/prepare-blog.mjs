@@ -7,6 +7,14 @@ const pageSize = 10;
 const maxPosts = 1000;
 const archiveChunkSize = 6;
 
+function classifyAudience(title) {
+  const normalizedTitle = title.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLocaleLowerCase("el-GR");
+  const childTerms = /παιδ|σχολ|νηπιαγωγ|μαθητ|εφηβ|παραμυθ|βρεφ/;
+  const adultTerms = /ενηλικ|εκπαιδευτικ|γονε|γονι|σεμιναρ|επιμορφ|ημεριδ|συνεδρ|λεσχη (?:βιβλιου|αναγνωσης)|πρωτ(?:ες|ων) βοηθει|εθελοντ|γενικ[ηης]+ συνελευ|εκλογ|καθηγητ|συλλογ/;
+  if (childTerms.test(normalizedTitle)) return "children";
+  return adultTerms.test(normalizedTitle) ? "adults" : "children";
+}
+
 function cleanContent(html) {
   return sanitizeHtml(html, {
     allowedTags: [
@@ -56,11 +64,17 @@ function postFromEntry(entry) {
   if (!id || !published || !originalUrl) throw new Error("Το Blogger επέστρεψε ανάρτηση με ελλιπή στοιχεία.");
   const rawContent = entry.content?.$t || entry.summary?.$t || "";
   const plainText = sanitizeHtml(rawContent, { allowedTags: [], allowedAttributes: {} }).replace(/\s+/g, " ").trim();
+  const content = cleanContent(rawContent);
+  const image = content.match(/<img[^>]+src="([^"]+)"/i)?.[1]?.replaceAll("&amp;", "&") || "";
+  const title = entry.title?.$t?.trim() || plainText.slice(0, 100) || `Δημοσίευση ${published.slice(0, 10)}`;
   return {
     id,
-    title: entry.title?.$t?.trim() || plainText.slice(0, 100) || `Δημοσίευση ${published.slice(0, 10)}`,
+    title,
     date: published.slice(0, 10),
-    content: cleanContent(rawContent),
+    content,
+    summary: plainText.slice(0, 240),
+    image,
+    audience: classifyAudience(title),
     originalUrl,
   };
 }
@@ -108,4 +122,10 @@ await writeFile(resolve(outputDirectory, "blog-archive.json"), JSON.stringify({
   pageSize: archiveChunkSize,
   pages: chunks.length,
 }));
+for (const audience of ["children", "adults"]) {
+  await writeFile(resolve(outputDirectory, `activity-archive-${audience}.json`), JSON.stringify({
+    generatedAt: new Date().toISOString(),
+    posts: posts.filter(post => post.audience === audience).map(({ id, title, date, summary, image, originalUrl }) => ({ id, title, date, summary, image, originalUrl })),
+  }));
+}
 console.log(`Prepared ${posts.length} Blogger posts in ${chunks.length} pages.`);
