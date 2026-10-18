@@ -25,6 +25,7 @@ const linkType = new URLSearchParams(location.hash.slice(1)).get("type");
 let recovery = linkType === "recovery" || linkType === "invite";
 const previewId = crypto.randomUUID();
 const activityRegistrationsEnabled = import.meta.env.VITE_ACTIVITY_REGISTRATIONS_ENABLED === "true";
+const editableSections = sections.filter(([id]) => id !== "stigmes-draseon");
 const undoHistory = createUndoHistory();
 const contentEditors = () => active === "home" || active === "posts" || sections.some(([id]) => id === active);
 
@@ -206,7 +207,7 @@ function showWorkspace() {
   $("account-label").textContent = demo ? "Γνωρίστε τη διαχείριση χωρίς να αλλάξει η ιστοσελίδα." : "Κάθε αλλαγή δημοσιεύεται μόνο όταν το επιλέξετε εσείς.";
   const buttons = $("section-buttons");
   buttons.replaceChildren();
-  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...sections, ["books", "Βιβλία και έλεγχος καταλόγου"], ["members", "Μέλη — ιδιωτικό μητρώο"], ["lending", "Εγγραφές και δανεισμοί"], ["activity-registrations", "Δηλώσεις δράσεων — ιδιωτικά"]]) {
+  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...editableSections, ["books", "Βιβλία και έλεγχος καταλόγου"], ["members", "Μέλη — ιδιωτικό μητρώο"], ["lending", "Εγγραφές και δανεισμοί"], ["activity-registrations", "Δηλώσεις δράσεων — ιδιωτικά"]]) {
     const item = button(label, () => selectEditor(id), "section-button");
     item.dataset.section = id;
     buttons.append(item);
@@ -315,7 +316,7 @@ function editPost(post, root) {
   label.htmlFor = "post-section";
   const select = element("select");
   select.id = "post-section";
-  for (const [id, title] of sections) {
+  for (const [id, title] of editableSections) {
     const option = element("option", title);
     option.value = id;
     select.append(option);

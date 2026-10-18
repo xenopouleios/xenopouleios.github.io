@@ -46,6 +46,7 @@ test("activity cards link to details with category-specific registration forms",
 
 test("activity publishing controls summaries and registration availability", () => {
   assert.match(admin, /Λίγα λόγια για την κάρτα/);
+  assert.match(admin, /sections\.filter\(\(\[id\]\) => id !== "stigmes-draseon"\)/);
   assert.match(admin, /cardSections\.has\(post\.section\)/);
   assert.match(admin, /Οι δηλώσεις συμμετοχής είναι ανοικτές/);
   assert.match(admin, /"Ημερομηνία διεξαγωγής"/);
