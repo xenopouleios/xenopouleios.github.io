@@ -34,7 +34,6 @@ const postDestinations = editableSections.flatMap(([id, title]) => activitySecti
     ]
   : [[id, title]]);
 const adminAreas = [
-  ["website", "Ιστοσελίδα", [["home", "Αρχική σελίδα και λογότυπο"], ...editableSections]],
   ["posts", "Αναρτήσεις", [
     ["posts", "Αναρτήσεις και ανακοινώσεις"],
     ["activity-archive", "Αρχείο προηγούμενων δράσεων"],
@@ -45,6 +44,7 @@ const adminAreas = [
     ["members", "Μέλη — ιδιωτικό μητρώο"],
     ["lending", "Εγγραφές και δανεισμοί"],
   ]],
+  ["website", "Ιστοσελίδα", [["home", "Αρχική σελίδα και λογότυπο"], ...editableSections]],
 ];
 let activeArea = "website";
 const undoHistory = createUndoHistory();
