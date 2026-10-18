@@ -62,8 +62,9 @@ test("activity publishing controls summaries and registration availability", () 
   assert.match(admin, /mountActivityAdmin/);
   assert.match(admin, /mountActivityArchiveAdmin/);
   assert.match(admin, /"Αρχείο προηγούμενων δράσεων"/);
-  assert.match(admin, /"Σελίδες ιστοσελίδας"/);
-  assert.match(admin, /"Αναρτήσεις και διαχείριση"/);
+  assert.match(admin, /\["website", "Ιστοσελίδα"/);
+  assert.match(admin, /\["posts", "Αναρτήσεις"/);
+  assert.match(admin, /\["lending", "Δανεισμός"/);
   assert.match(archiveAdmin, /"Αναζήτηση τίτλου"/);
   assert.match(archiveAdmin, /"Διαγραφή από την ιστοσελίδα"/);
   assert.match(archiveAdmin, /activity_archive_overrides/);

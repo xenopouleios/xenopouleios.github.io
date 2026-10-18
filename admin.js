@@ -33,6 +33,20 @@ const postDestinations = editableSections.flatMap(([id, title]) => activitySecti
       [`${id}:previous`, `${title} — Προηγούμενες δράσεις`],
     ]
   : [[id, title]]);
+const adminAreas = [
+  ["website", "Ιστοσελίδα", [["home", "Αρχική σελίδα και λογότυπο"], ...editableSections]],
+  ["posts", "Αναρτήσεις", [
+    ["posts", "Αναρτήσεις και ανακοινώσεις"],
+    ["activity-archive", "Αρχείο προηγούμενων δράσεων"],
+    ["activity-registrations", "Δηλώσεις δράσεων — ιδιωτικά"],
+  ]],
+  ["lending", "Δανεισμός", [
+    ["books", "Βιβλία και έλεγχος καταλόγου"],
+    ["members", "Μέλη — ιδιωτικό μητρώο"],
+    ["lending", "Εγγραφές και δανεισμοί"],
+  ]],
+];
+let activeArea = "website";
 const undoHistory = createUndoHistory();
 const contentEditors = () => active === "home" || active === "posts" || active === "activity-archive" || sections.some(([id]) => id === active);
 
@@ -212,31 +226,34 @@ function showWorkspace() {
   $("demo-notice").hidden = !demo;
   $("logout").textContent = demo ? "Τέλος δοκιμής" : "Αποσύνδεση";
   $("account-label").textContent = demo ? "Γνωρίστε τη διαχείριση χωρίς να αλλάξει η ιστοσελίδα." : "Κάθε αλλαγή δημοσιεύεται μόνο όταν το επιλέξετε εσείς.";
-  const buttons = $("section-buttons");
-  buttons.replaceChildren();
-  const groups = [
-    ["Σελίδες ιστοσελίδας", [["home", "Αρχική σελίδα και λογότυπο"], ...editableSections]],
-    ["Αναρτήσεις και διαχείριση", [
-      ["posts", "Αναρτήσεις και ανακοινώσεις"],
-      ["activity-archive", "Αρχείο προηγούμενων δράσεων"],
-      ["books", "Βιβλία και έλεγχος καταλόγου"],
-      ["members", "Μέλη — ιδιωτικό μητρώο"],
-      ["lending", "Εγγραφές και δανεισμοί"],
-      ["activity-registrations", "Δηλώσεις δράσεων — ιδιωτικά"],
-    ]],
-  ];
-  for (const [title, entries] of groups) {
-    const group = element("section", undefined, "section-group");
-    group.append(element("h3", title, "section-group-title"));
-    for (const [id, label] of entries) {
-      const item = button(label, () => selectEditor(id), "section-button");
-      item.dataset.section = id;
-      group.append(item);
-    }
-    buttons.append(group);
-  }
+  activeArea = adminAreas.find(([, , entries]) => entries.some(([id]) => id === active))?.[0] ?? "website";
+  renderWorkspaceNavigation();
   renderEditor();
   updateState();
+}
+
+function renderWorkspaceNavigation() {
+  const menu = $("workspace-menu");
+  const buttons = $("section-buttons");
+  menu.replaceChildren();
+  buttons.replaceChildren();
+  for (const [areaId, label, entries] of adminAreas) {
+    const areaButton = button(label, () => {
+      activeArea = areaId;
+      renderWorkspaceNavigation();
+      selectEditor(entries[0][0]);
+    }, "workspace-menu-button");
+    areaButton.setAttribute("aria-current", String(areaId === activeArea));
+    menu.append(areaButton);
+  }
+  const [, areaLabel, entries] = adminAreas.find(([id]) => id === activeArea);
+  $("sidebar-title").textContent = areaLabel;
+  for (const [id, label] of entries) {
+    const item = button(label, () => selectEditor(id), "section-button");
+    item.dataset.section = id;
+    item.setAttribute("aria-current", String(id === active));
+    buttons.append(item);
+  }
 }
 
 async function selectEditor(id) {
@@ -244,6 +261,8 @@ async function selectEditor(id) {
   if (bookDirty && !await confirmAction("Οι αλλαγές του βιβλίου δεν αποθηκεύτηκαν. Να αλλάξουμε ενότητα χωρίς αποθήκευση;", "Μη αποθηκευμένο βιβλίο")) return;
   if (memberDirty && !await confirmAction("Οι αλλαγές του μέλους δεν αποθηκεύτηκαν. Να αλλάξουμε ενότητα χωρίς αποθήκευση;", "Μη αποθηκευμένο μέλος")) return;
   active = id;
+  activeArea = adminAreas.find(([, , entries]) => entries.some(([entryId]) => entryId === id))?.[0] ?? activeArea;
+  renderWorkspaceNavigation();
   renderEditor();
 }
 

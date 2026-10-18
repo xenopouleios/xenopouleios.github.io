@@ -37,13 +37,14 @@ form > button { margin: 24px 10px 0 0; }
 .message.warning { background: #fff6dd; color: #654816; border-color: #c49a43; }
 .workspace-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
 .workspace-heading p { color: #536255; }
+.workspace-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; padding: 10px; border: 1px solid #bdc7b8; border-radius: 10px; background: #e6ebdf; }
+.workspace-menu-button { width: 100%; padding-inline: 10px; background: transparent; color: #294c3b; border-color: transparent; }
+.workspace-menu-button:hover:not(:disabled) { background: #f8fbf5; }
+.workspace-menu-button[aria-current=true] { border-color: #294c3b; background: #fff; }
 .editor-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: start; }
 .sidebar { padding: 24px 18px; }
 .sidebar h2 { font-size: 22px; padding-inline: 10px; }
-#section-buttons { display: grid; gap: 26px; }
-.section-group { min-width: 0; }
-.section-group + .section-group { padding-top: 24px; border-top: 2px solid #d9ded5; }
-.section-group-title { margin: 0 10px 10px; color: #9b4b2e; font-size: 15px; line-height: 1.4; letter-spacing: .6px; text-transform: uppercase; }
+#section-buttons { display: grid; gap: 5px; }
 .section-button { width: 100%; display: block; text-align: left; border: 2px solid transparent; background: transparent; color: #294c3b; font-weight: normal; padding: 12px; margin-bottom: 5px; }
 .section-button:hover:not(:disabled) { background: #edf2e9; }
 .section-button[aria-current=true] { border-color: #294c3b; background: #e6eddf; font-weight: bold; }
@@ -71,8 +72,7 @@ dialog::backdrop { background: #15271ac9; }
 #preview-frame { width: 100%; flex: 1; min-height: 0; border: 1px solid #bdc7b8; background: #f7f3e9; }
 @media (max-width: 900px) {
   .editor-layout { grid-template-columns: 1fr; }
-  #section-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-  .section-group + .section-group { padding-top: 0; padding-left: 18px; border-top: 0; border-left: 2px solid #d9ded5; }
+  #section-buttons { grid-template-columns: 1fr 1fr; }
   .publish-bar { position: static; flex-direction: column; align-items: stretch; }
   .publish-bar .actions > button { flex: 1; }
   .archive-search { grid-template-columns: 1fr; align-items: stretch; }
@@ -81,8 +81,9 @@ dialog::backdrop { background: #15271ac9; }
   .admin-main { padding-inline: 14px; margin-top: 20px; }
   .admin-header { padding: 18px; flex-direction: column; align-items: flex-start; gap: 12px; }
   .panel { padding: 22px 18px; }
+  .workspace-menu { gap: 4px; padding: 6px; }
+  .workspace-menu-button { min-width: 0; padding-inline: 4px; font-size: 14px; }
   #section-buttons { grid-template-columns: 1fr; }
-  .section-group + .section-group { padding-top: 24px; padding-left: 0; border-top: 2px solid #d9ded5; border-left: 0; }
   .workspace-heading { flex-direction: column; margin-bottom: 20px; }
   .password-row { flex-wrap: wrap; }
   .actions { flex-direction: column; align-items: stretch; }
