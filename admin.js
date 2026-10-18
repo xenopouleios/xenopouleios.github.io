@@ -15,7 +15,7 @@ let defaults = {};
 let version = 0;
 let dirty = false;
 let demo = false;
-let active = "home";
+let active = "posts";
 let userId = null;
 let busy = false;
 let bookDirty = false;
@@ -46,7 +46,7 @@ const adminAreas = [
   ]],
   ["website", "Ιστοσελίδα", [["home", "Αρχική σελίδα και λογότυπο"], ...editableSections]],
 ];
-let activeArea = "website";
+let activeArea = "posts";
 const undoHistory = createUndoHistory();
 const contentEditors = () => active === "home" || active === "posts" || active === "activity-archive" || sections.some(([id]) => id === active);
 
