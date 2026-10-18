@@ -5,7 +5,6 @@ export const sections = [
   ["draseis-enilikes", "Δράσεις για εκπαιδευτικούς και ενήλικες"],
   ["mouseio", "Μουσείο Ξενόπουλου"],
   ["xenopoulos-ergo", "Ζωή και έργο του Ξενόπουλου"],
-  ["mouseio-episkepseis", "Επισκέψεις στο Μουσείο"],
   ["filoi", "Ο σύλλογός μας"],
   ["synergasies-foreis", "Φορείς με τους οποίους συνεργαζόμαστε"],
   ["ekdiloseis", "Εκδηλώσεις που διοργανώνονται από κοινού"],
@@ -18,7 +17,7 @@ export const sections = [
 export const navigation = [
   ["Η Βιβλιοθήκη", [["bibliothiki", "Παρουσίαση της Ξενοπουλείου"], ["daneistiki", "Δανεισμός βιβλίων"]]],
   ["Δράσεις", [["draseis-paidia", "Για παιδιά"], ["draseis-enilikes", "Για εκπαιδευτικούς και ενήλικες"]]],
-  ["Μουσείο Ξενόπουλου", [["mouseio", "Παρουσίαση του μουσείου"], ["xenopoulos-ergo", "Ζωή και έργο του Ξενόπουλου"], ["mouseio-episkepseis", "Επισκέψεις"]]],
+  ["Μουσείο Ξενόπουλου", [["mouseio", "Παρουσίαση του μουσείου"], ["xenopoulos-ergo", "Ζωή και έργο του Ξενόπουλου"]]],
   ["Ο Σύλλογος", [["filoi", "Ποιοι είμαστε"]]],
   ["Συνεργασίες - Εκδηλώσεις", [["synergasies-foreis", "Φορείς με τους οποίους συνεργαζόμαστε"], ["ekdiloseis", "Εκδηλώσεις που διοργανώνονται από κοινού"]]],
   ["Δίκτυο Freinet", "freinet"],
@@ -65,8 +64,10 @@ export function sectionFields(id) {
 
 export const allFields = [...homeFields, ...sections.flatMap(([id]) => sectionFields(id))];
 const legacyContactSections = ["topothesia", "forma-epikoinonias"];
-const legacyNoteIds = [...sections.map(([id]) => `${id}-note`), ...legacyContactSections.map(id => `${id}-note`)];
-const legacySectionLabelIds = [...sections.map(([id]) => `${id}-label`), ...legacyContactSections.map(id => `${id}-label`)];
+const legacyRemovedSections = ["mouseio-episkepseis"];
+const legacySections = [...legacyContactSections, ...legacyRemovedSections];
+const legacyNoteIds = [...sections.map(([id]) => `${id}-note`), ...legacySections.map(id => `${id}-note`)];
+const legacySectionLabelIds = [...sections.map(([id]) => `${id}-label`), ...legacySections.map(id => `${id}-label`)];
 const legacyCardLabelIds = ["bibliothiki", "mouseio", "filoi", "freinet"].map(id => `${id}-card-label`);
 const legacyContactDefaults = new Set([
   "Τα στοιχεία επικοινωνίας θα προστεθούν μόλις επιβεβαιωθούν από τους υπευθύνους.",
@@ -105,11 +106,11 @@ export function validateContent(content) {
   if (!content || typeof content !== "object" || Array.isArray(content)) throw new Error("Μη έγκυρο περιεχόμενο.");
   if (!content.fields || !content.images || !Array.isArray(content.posts)) throw new Error("Λείπουν στοιχεία περιεχομένου.");
   if (typeof content.fields !== "object" || Array.isArray(content.fields) || typeof content.images !== "object" || Array.isArray(content.images)) throw new Error("Μη έγκυρα πεδία περιεχομένου.");
-  const fieldIds = new Set([...allFields.map(([id]) => id), ...legacyContactSections.flatMap(id => sectionFields(id).map(([fieldId]) => fieldId)), ...legacyNoteIds, ...legacySectionLabelIds, ...legacyCardLabelIds]);
+  const fieldIds = new Set([...allFields.map(([id]) => id), ...legacySections.flatMap(id => sectionFields(id).map(([fieldId]) => fieldId)), ...legacyNoteIds, ...legacySectionLabelIds, ...legacyCardLabelIds]);
   for (const [id, value] of Object.entries(content.fields)) {
     if (!fieldIds.has(id) || typeof value !== "string" || value.length > 20000) throw new Error("Μη έγκυρο πεδίο κειμένου.");
   }
-  const imageIds = new Set(["logo", "hero", ...sections.map(([id]) => id), ...legacyContactSections]);
+  const imageIds = new Set(["logo", "hero", ...sections.map(([id]) => id), ...legacySections]);
   for (const [id, image] of Object.entries(content.images)) {
     if (!imageIds.has(id) || !image || typeof image.alt !== "string" || image.alt.length > 500) throw new Error("Μη έγκυρη εικόνα.");
     safeImageUrl(image.url);
@@ -117,7 +118,7 @@ export function validateContent(content) {
   if (content.posts.length > 500) throw new Error("Επιτρέπονται έως 500 αναρτήσεις.");
   const ids = new Set();
   for (const post of content.posts) {
-    if (!post || typeof post.id !== "string" || ids.has(post.id) || ![...sections.map(([id]) => id), ...legacyContactSections].includes(post.section)) throw new Error("Μη έγκυρη ανάρτηση.");
+    if (!post || typeof post.id !== "string" || ids.has(post.id) || ![...sections.map(([id]) => id), ...legacySections].includes(post.section)) throw new Error("Μη έγκυρη ανάρτηση.");
     ids.add(post.id);
     const allowedPostFields = new Set(["id", "section", "title", "body", "date", "image", "alt", "summary", "registration_open"]);
     if (Object.keys(post).some(key => !allowedPostFields.has(key))) throw new Error("Μη έγκυρο πεδίο ανάρτησης.");
@@ -157,8 +158,14 @@ export function normalizeContent(content, defaults = {}) {
     if (!normalized.images.epikoinonia && normalized.images[id]) normalized.images.epikoinonia = normalized.images[id];
     delete normalized.images[id];
   }
+  for (const id of legacyRemovedSections) {
+    for (const [fieldId] of sectionFields(id)) delete normalized.fields[fieldId];
+    delete normalized.fields[`${id}-note`];
+    delete normalized.fields[`${id}-label`];
+    delete normalized.images[id];
+  }
   if (contactParts.length) normalized.fields["epikoinonia-body"] = contactParts.join("\n\n");
-  normalized.posts = normalized.posts.map(post => {
+  normalized.posts = normalized.posts.filter(post => !legacyRemovedSections.includes(post.section)).map(post => {
     if (legacyContactSections.includes(post.section)) return { ...post, section: "epikoinonia" };
     if (!cardSections.has(post.section)) return post;
     const normalizedPost = {

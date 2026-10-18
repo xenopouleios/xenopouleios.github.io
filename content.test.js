@@ -8,7 +8,7 @@ const post = () => ({ id: "test-1", section: "nea", title: "Νέα ανακοί�
 test("baseline and all editable sections are accepted", () => {
   assert.deepEqual(validateContent(emptyContent()), emptyContent());
   assert.equal(new Set(allFields.map(([id]) => id)).size, allFields.length);
-  assert.equal(sections.length, 14);
+  assert.equal(sections.length, 13);
   const menuPages = navigation.flatMap(([, item]) => typeof item === "string" ? [item] : item.map(([id]) => id));
   assert.equal(navigation.length, 8);
   assert.deepEqual(new Set(menuPages), new Set(sections.map(([id]) => id)));
@@ -17,6 +17,18 @@ test("baseline and all editable sections are accepted", () => {
   for (const [id] of allFields) content.fields[id] = "Κείμενο";
   content.posts = [post()];
   assert.equal(validateContent(content), content);
+});
+
+test("removed museum visits content is accepted and discarded", () => {
+  const content = emptyContent();
+  content.fields["mouseio-episkepseis-body"] = "Παλιές πληροφορίες επισκέψεων";
+  content.images["mouseio-episkepseis"] = { url: "", alt: "" };
+  content.posts = [{ ...post(), section: "mouseio-episkepseis" }];
+  assert.doesNotThrow(() => validateContent(content));
+  const normalized = normalizeContent(content);
+  assert.equal(Object.hasOwn(normalized.fields, "mouseio-episkepseis-body"), false);
+  assert.equal(Object.hasOwn(normalized.images, "mouseio-episkepseis"), false);
+  assert.equal(normalized.posts.length, 0);
 });
 
 test("legacy contact pages are merged into the single contact page", () => {
