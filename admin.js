@@ -1,5 +1,5 @@
 import { client, configured, loadContent, publishContent, uploadImage } from "./cms.js";
-import { activitySections, ageRangeSections, cardSections, emptyContent, homeFields, normalizeContent, readDefaults, requiresEventDate, sectionFields, sections, validateContent, validateImage } from "./content.js";
+import { activitySections, cardSections, emptyContent, homeFields, normalizeContent, readDefaults, requiresEventDate, sectionFields, sections, usesAgeRange, validateContent, validateImage } from "./content.js";
 import logoUrl from "./logo.png";
 import { mountLibraryAdmin } from "./library-admin.js";
 import { mountMembersAdmin } from "./members-admin.js";
@@ -400,7 +400,7 @@ function editPost(post, root) {
     if (!requiresEventDate(post)) delete post.event_date;
     if (activitySections.has(post.section)) post.registration_open ??= false;
     else delete post.registration_open;
-    if (ageRangeSections.has(post.section)) post.age_range ??= "";
+    if (usesAgeRange(post)) post.age_range ??= "";
     else delete post.age_range;
     changed();
     editPost(post, root);
@@ -414,7 +414,7 @@ function editPost(post, root) {
       else delete post.event_date;
     }, { type: "date", required: true });
   }
-  if (ageRangeSections.has(post.section)) {
+  if (usesAgeRange(post)) {
     field(form, "post-age-range", "Ηλικίες στις οποίες απευθύνεται", post.age_range ?? "", value => { post.age_range = value; }, { maxLength: 100 });
   }
   if (cardSections.has(post.section)) {

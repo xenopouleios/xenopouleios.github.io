@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { activitySections, ageRangeSections, allFields, cardSections, emptyContent, maxImageBytes, navigation, normalizeContent, requiresEventDate, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
+import { activitySections, ageRangeSections, allFields, cardSections, emptyContent, maxImageBytes, navigation, normalizeContent, requiresEventDate, safeImageUrl, sections, usesAgeRange, validateContent, validateImage } from "./content.js";
 import { validatePublicConfig } from "./config.js";
 
 const post = () => ({ id: "test-1", section: "nea", title: "Νέα ανακοίνωση", body: "Το κείμενό μας.", date: "2026-10-15", image: "", alt: "" });
@@ -70,8 +70,12 @@ test("activity posts support card summaries and controlled registration", () => 
   assert.equal(normalized.posts[0].summary, "Αναλυτικό κείμενο παλιότερης δράσης.");
   assert.equal(normalized.posts[0].registration_open, false);
   assert.equal(requiresEventDate(normalized.posts[0]), true);
+  assert.equal(usesAgeRange({ ...activity, activity_period: "upcoming" }), true);
+  assert.equal(usesAgeRange({ ...activity, activity_period: "previous" }), false);
   assert.equal(requiresEventDate({ ...activity, activity_period: "previous" }), false);
-  assert.equal(Object.hasOwn(normalizeContent({ ...content, posts: [{ ...activity, activity_period: "previous" }] }).posts[0], "event_date"), false);
+  const previous = normalizeContent({ ...content, posts: [{ ...activity, activity_period: "previous" }] }).posts[0];
+  assert.equal(Object.hasOwn(previous, "event_date"), false);
+  assert.equal(Object.hasOwn(previous, "age_range"), false);
   assert.equal(requiresEventDate({ ...post(), section: "ekdiloseis" }), true);
   assert.equal(requiresEventDate({ ...post(), section: "freinet" }), true);
   assert.equal(requiresEventDate(post()), false);
@@ -83,7 +87,9 @@ test("activity posts support card summaries and controlled registration", () => 
   const freinet = emptyContent();
   freinet.posts = [{ ...post(), section: "freinet", body: "Αναλυτικό κείμενο του Δικτύου Freinet.", event_date: "2026-10-22", age_range: "Εκπαιδευτικοί και γονείς" }];
   assert.equal(validateContent(freinet), freinet);
-  assert.equal(normalizeContent(freinet).posts[0].summary, "Αναλυτικό κείμενο του Δικτύου Freinet.");
+  const normalizedFreinet = normalizeContent(freinet).posts[0];
+  assert.equal(normalizedFreinet.summary, "Αναλυτικό κείμενο του Δικτύου Freinet.");
+  assert.equal(Object.hasOwn(normalizedFreinet, "age_range"), false);
   assert.throws(() => validateContent({ ...freinet, posts: [{ ...freinet.posts[0], registration_open: true }] }));
   assert.throws(() => validateContent({ ...freinet, posts: [{ ...freinet.posts[0], age_range: "α".repeat(101) }] }));
   assert.throws(() => validateContent({ ...freinet, posts: [{ ...freinet.posts[0], event_date: "22/10/2026" }] }));

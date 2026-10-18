@@ -1,5 +1,5 @@
 import { client, configured, loadContent } from "./cms.js";
-import { activitySections, ageRangeSections, allFields, cardSections, normalizeContent, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
+import { activitySections, allFields, cardSections, normalizeContent, readDefaults, safeImageUrl, sections, usesAgeRange, validateContent } from "./content.js";
 import { mountMemberPortal } from "./member-portal.js";
 import { mountBlogArchive } from "./blog-archive.js";
 import friendsLogoUrl from "./friends-logo.png";
@@ -528,7 +528,7 @@ export function renderContent(content) {
       const card = createActivityCard(post, activityUrl(post.id), post.section === "freinet" ? "✳" : "Ξ");
       if (post.event_date) card.dataset.activityDate = post.event_date;
       const meta = createNode("div", undefined, "activity-card-meta");
-      if (ageRangeSections.has(post.section) && post.age_range?.trim()) {
+      if (usesAgeRange(post) && post.age_range?.trim()) {
         meta.append(createNode("span", post.age_range.trim()));
       }
       if (post.event_date) {

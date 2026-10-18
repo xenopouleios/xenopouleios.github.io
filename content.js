@@ -27,6 +27,8 @@ export const navigation = [
 export const activitySections = new Set(["draseis-paidia", "draseis-enilikes"]);
 export const cardSections = new Set([...activitySections, "freinet"]);
 export const ageRangeSections = new Set(["draseis-paidia", "freinet"]);
+export const usesAgeRange = post => post.section === "draseis-paidia"
+  && (post.activity_period ?? "upcoming") === "upcoming";
 export const requiresEventDate = post => post.section === "ekdiloseis"
   || post.section === "freinet"
   || (activitySections.has(post.section) && (post.activity_period ?? "upcoming") === "upcoming");
@@ -202,6 +204,7 @@ export function normalizeContent(content, defaults = {}) {
       }
     }
     if (!requiresEventDate(normalizedPost)) delete normalizedPost.event_date;
+    if (!usesAgeRange(normalizedPost)) delete normalizedPost.age_range;
     return normalizedPost;
   });
   return normalized;

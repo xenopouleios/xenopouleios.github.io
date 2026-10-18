@@ -63,7 +63,7 @@ test("activity publishing controls summaries and registration availability", () 
   assert.match(admin, /requiresEventDate\(post\)/);
   assert.match(admin, /validateRequiredEventDates\(\)/);
   assert.match(admin, /"Ηλικίες στις οποίες απευθύνεται"/);
-  assert.match(admin, /ageRangeSections\.has\(post\.section\)/);
+  assert.match(admin, /usesAgeRange\(post\)/);
   assert.match(admin, /mountActivityAdmin/);
   assert.match(admin, /mountActivityArchiveAdmin/);
   assert.match(admin, /"Αρχείο προηγούμενων δράσεων"/);
