@@ -1,6 +1,7 @@
 import { client, configured, loadContent } from "./cms.js";
 import { activitySections, allFields, cardSections, normalizeContent, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
 import { mountMemberPortal } from "./member-portal.js";
+import { mountBlogArchive } from "./blog-archive.js";
 import friendsLogoUrl from "./friends-logo.png";
 import "./library.css";
 
@@ -444,3 +445,4 @@ function showError(message) {
 }
 
 observeScrollReveals();
+if (activePage === "stigmes-draseon") mountBlogArchive(observeScrollReveals);
