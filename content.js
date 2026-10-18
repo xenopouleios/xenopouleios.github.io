@@ -21,7 +21,7 @@ export const navigation = [
   ["Ο Σύλλογος", [["filoi", "Ποιοι είμαστε"]]],
   ["Συνεργασίες - Εκδηλώσεις", [["synergasies-foreis", "Φορείς με τους οποίους συνεργαζόμαστε"], ["ekdiloseis", "Εκδηλώσεις που διοργανώνονται από κοινού"]]],
   ["Δίκτυο Freinet", "freinet"],
-  ["Νέα - Ανακοινώσεις", [["nea", "Ανακοινώσεις"], ["stigmes-draseon", "Στιγμές από προηγούμενες δράσεις"]]],
+  ["Νέα - Ανακοινώσεις", "nea"],
   ["Επικοινωνία", "epikoinonia"],
 ];
 export const activitySections = new Set(["draseis-paidia", "draseis-enilikes"]);

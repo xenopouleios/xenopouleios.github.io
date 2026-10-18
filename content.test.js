@@ -11,8 +11,9 @@ test("baseline and all editable sections are accepted", () => {
   assert.equal(sections.length, 13);
   const menuPages = navigation.flatMap(([, item]) => typeof item === "string" ? [item] : item.map(([id]) => id));
   assert.equal(navigation.length, 8);
-  assert.deepEqual(new Set(menuPages), new Set(sections.map(([id]) => id)));
-  assert.equal(menuPages.length, sections.length);
+  assert.deepEqual(new Set(menuPages), new Set(sections.map(([id]) => id).filter(id => id !== "stigmes-draseon")));
+  assert.equal(menuPages.includes("stigmes-draseon"), false);
+  assert.equal(menuPages.length, sections.length - 1);
   const content = emptyContent();
   for (const [id] of allFields) content.fields[id] = "Κείμενο";
   content.posts = [post()];
