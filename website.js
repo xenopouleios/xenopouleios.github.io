@@ -545,14 +545,17 @@ export function renderContent(content) {
     const article = document.createElement("article");
     const announcement = post.section === "nea";
     article.className = announcement ? "published-post announcement-card" : "published-post";
-    const time = document.createElement("time");
-    const displayedDate = post.event_date ?? post.date;
-    time.dateTime = displayedDate;
-    time.textContent = new Intl.DateTimeFormat("el-GR", { dateStyle: "long", timeZone: "UTC" }).format(new Date(displayedDate));
     const title = document.createElement("h3");
     title.textContent = post.title;
-    if (announcement) article.append(title, time);
-    else article.append(time, title);
+    if (post.event_date) {
+      const time = document.createElement("time");
+      time.dateTime = post.event_date;
+      time.textContent = new Intl.DateTimeFormat("el-GR", { dateStyle: "long", timeZone: "UTC" }).format(new Date(post.event_date));
+      if (announcement) article.append(title, time);
+      else article.append(time, title);
+    } else {
+      article.append(title);
+    }
     const content = announcement ? createNode("div", undefined, "announcement-content") : article;
     if (post.image) {
       const image = document.createElement("img");
