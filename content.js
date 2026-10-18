@@ -26,6 +26,7 @@ export const navigation = [
   ["Επικοινωνία", "epikoinonia"],
 ];
 export const activitySections = new Set(["draseis-paidia", "draseis-enilikes"]);
+export const cardSections = new Set([...activitySections, "freinet"]);
 
 export const homeFields = [
   ["site-name", ".brand-name", "Όνομα ιστοσελίδας"],
@@ -123,7 +124,7 @@ export function validateContent(content) {
     if (typeof post.title !== "string" || !post.title.trim() || post.title.length > 300 || typeof post.body !== "string" || !post.body.trim() || post.body.length > 50000 || typeof post.alt !== "string" || post.alt.length > 500) throw new Error("Συμπληρώστε τίτλο και κείμενο στην ανάρτηση.");
     if (typeof post.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(post.date) || !Number.isFinite(Date.parse(post.date)) || new Date(post.date).toISOString().slice(0, 10) !== post.date) throw new Error("Μη έγκυρη ημερομηνία.");
     if (typeof post.image !== "string") throw new Error("Μη έγκυρη φωτογραφία ανάρτησης.");
-    if (post.summary !== undefined && (!activitySections.has(post.section) || typeof post.summary !== "string" || !post.summary.trim() || post.summary.length > 500)) throw new Error("Μη έγκυρη σύντομη περιγραφή δράσης.");
+    if (post.summary !== undefined && (!cardSections.has(post.section) || typeof post.summary !== "string" || !post.summary.trim() || post.summary.length > 500)) throw new Error("Μη έγκυρη σύντομη περιγραφή κάρτας.");
     if (post.registration_open !== undefined && (!activitySections.has(post.section) || typeof post.registration_open !== "boolean")) throw new Error("Μη έγκυρη κατάσταση συμμετοχών.");
     safeImageUrl(post.image);
   }
@@ -159,12 +160,13 @@ export function normalizeContent(content, defaults = {}) {
   if (contactParts.length) normalized.fields["epikoinonia-body"] = contactParts.join("\n\n");
   normalized.posts = normalized.posts.map(post => {
     if (legacyContactSections.includes(post.section)) return { ...post, section: "epikoinonia" };
-    if (!activitySections.has(post.section)) return post;
-    return {
+    if (!cardSections.has(post.section)) return post;
+    const normalizedPost = {
       ...post,
       summary: post.summary ?? post.body.replace(/\s+/g, " ").trim().slice(0, 240),
-      registration_open: post.registration_open === true,
     };
+    if (activitySections.has(post.section)) normalizedPost.registration_open = post.registration_open === true;
+    return normalizedPost;
   });
   return normalized;
 }

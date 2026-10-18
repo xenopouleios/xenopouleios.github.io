@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { activitySections, allFields, emptyContent, maxImageBytes, navigation, normalizeContent, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
+import { activitySections, allFields, cardSections, emptyContent, maxImageBytes, navigation, normalizeContent, safeImageUrl, sections, validateContent, validateImage } from "./content.js";
 import { validatePublicConfig } from "./config.js";
 
 const post = () => ({ id: "test-1", section: "nea", title: "Νέα ανακοίνωση", body: "Το κείμενό μας.", date: "2026-10-15", image: "", alt: "" });
@@ -43,6 +43,7 @@ test("activity posts support card summaries and controlled registration", () => 
   content.posts = [activity];
   assert.equal(validateContent(content), content);
   assert.deepEqual(activitySections, new Set(["draseis-paidia", "draseis-enilikes"]));
+  assert.deepEqual(cardSections, new Set(["draseis-paidia", "draseis-enilikes", "freinet"]));
   const legacy = emptyContent();
   legacy.posts = [{ ...post(), section: "draseis-enilikes", body: "Αναλυτικό κείμενο παλιότερης δράσης." }];
   const normalized = normalizeContent(legacy);
@@ -50,6 +51,10 @@ test("activity posts support card summaries and controlled registration", () => 
   assert.equal(normalized.posts[0].registration_open, false);
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, summary: "" }] }));
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, registration_open: "yes" }] }));
+  const freinet = emptyContent();
+  freinet.posts = [{ ...post(), section: "freinet", body: "Αναλυτικό κείμενο του Δικτύου Freinet." }];
+  assert.equal(normalizeContent(freinet).posts[0].summary, "Αναλυτικό κείμενο του Δικτύου Freinet.");
+  assert.throws(() => validateContent({ ...freinet, posts: [{ ...freinet.posts[0], registration_open: true }] }));
 });
 
 test("malformed documents and unknown fields are rejected", () => {

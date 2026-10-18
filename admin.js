@@ -1,5 +1,5 @@
 import { client, configured, loadContent, publishContent, uploadImage } from "./cms.js";
-import { activitySections, emptyContent, homeFields, normalizeContent, readDefaults, sectionFields, sections, validateContent, validateImage } from "./content.js";
+import { activitySections, cardSections, emptyContent, homeFields, normalizeContent, readDefaults, sectionFields, sections, validateContent, validateImage } from "./content.js";
 import logoUrl from "./logo.png";
 import { mountLibraryAdmin } from "./library-admin.js";
 import { mountMembersAdmin } from "./members-admin.js";
@@ -324,23 +324,20 @@ function editPost(post, root) {
   select.addEventListener("change", () => {
     rememberChange(`post-section-${post.id}-${crypto.randomUUID()}`);
     post.section = select.value;
-    if (activitySections.has(post.section)) {
-      post.summary ??= "";
-      post.registration_open ??= false;
-    } else {
-      delete post.summary;
-      delete post.registration_open;
-    }
+    if (cardSections.has(post.section)) post.summary ??= "";
+    else delete post.summary;
+    if (activitySections.has(post.section)) post.registration_open ??= false;
+    else delete post.registration_open;
     changed();
     editPost(post, root);
   });
   form.append(label, select);
   field(form, "post-title", "Τίτλος ανάρτησης", post.title, value => { post.title = value; }, { maxLength: 300, required: true });
   field(form, "post-date", "Ημερομηνία", post.date, value => { post.date = value; }, { type: "date", required: true });
-  if (activitySections.has(post.section)) {
-    field(form, "post-summary", "Λίγα λόγια για την κάρτα της δράσης", post.summary ?? "", value => { post.summary = value; }, { multiline: true, maxLength: 500, required: true });
+  if (cardSections.has(post.section)) {
+    field(form, "post-summary", "Λίγα λόγια για την κάρτα", post.summary ?? "", value => { post.summary = value; }, { multiline: true, maxLength: 500, required: true });
   }
-  field(form, "post-body", activitySections.has(post.section) ? "Αναλυτικό κείμενο δράσης" : "Κείμενο ανάρτησης", post.body, value => { post.body = value; }, { multiline: true, maxLength: 50000, required: true });
+  field(form, "post-body", cardSections.has(post.section) ? "Αναλυτικό κείμενο" : "Κείμενο ανάρτησης", post.body, value => { post.body = value; }, { multiline: true, maxLength: 50000, required: true });
   if (activitySections.has(post.section)) {
     const registrationLabel = element("label", undefined, "checkbox-field");
     const registration = element("input");

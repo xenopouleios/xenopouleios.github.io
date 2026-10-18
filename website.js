@@ -1,5 +1,5 @@
 import { client, configured, loadContent } from "./cms.js";
-import { activitySections, allFields, normalizeContent, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
+import { activitySections, allFields, cardSections, normalizeContent, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
 import { mountMemberPortal } from "./member-portal.js";
 import "./library.css";
 
@@ -210,13 +210,13 @@ function renderActivityDetail(posts) {
   const root = document.querySelector("#activity-detail");
   root.hidden = false;
   const id = new URL(location.href).searchParams.get("id");
-  const post = posts.find(item => item.id === id && activitySections.has(item.section));
+  const post = posts.find(item => item.id === id && cardSections.has(item.section));
   if (!post) {
-    root.replaceChildren(createNode("h1", "Η δράση δεν βρέθηκε"), createNode("p", "Η δράση μπορεί να έχει αφαιρεθεί ή η διεύθυνση να μην είναι σωστή."));
-    document.title = "Η δράση δεν βρέθηκε — Ξενοπούλειο";
+    root.replaceChildren(createNode("h1", "Η ανάρτηση δεν βρέθηκε"), createNode("p", "Η ανάρτηση μπορεί να έχει αφαιρεθεί ή η διεύθυνση να μην είναι σωστή."));
+    document.title = "Η ανάρτηση δεν βρέθηκε — Ξενοπούλειο";
     return;
   }
-  const back = createNode("a", `← ${post.section === "draseis-paidia" ? "Δράσεις για παιδιά" : "Δράσεις για εκπαιδευτικούς και ενήλικες"}`, "back-home");
+  const back = createNode("a", `← ${sections.find(([id]) => id === post.section)[1]}`, "back-home");
   back.href = pageUrl(post.section);
   const article = createNode("article", undefined, "activity-article");
   const time = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "long", timeZone: "UTC" }).format(new Date(post.date)));
@@ -231,7 +231,8 @@ function renderActivityDetail(posts) {
     activityContent.append(image);
   }
   activityContent.append(createNode("p", post.body, "activity-full-text"));
-  article.append(activityContent, activityRegistrationForm(post));
+  article.append(activityContent);
+  if (activitySections.has(post.section)) article.append(activityRegistrationForm(post));
   root.replaceChildren(back, article);
   document.title = `${post.title} — Ξενοπούλειο`;
 }
@@ -327,11 +328,11 @@ export function renderContent(content) {
   }
   const activityGrids = new Map();
   for (const post of [...content.posts].sort((a, b) => b.date.localeCompare(a.date))) {
-    if (activitySections.has(post.section)) {
+    if (cardSections.has(post.section)) {
       let grid = activityGrids.get(post.section);
       if (!grid) {
         const listing = createNode("section", undefined, "activity-listing");
-        const heading = createNode("h3", "ΠΡΟΣΕΧΩΣ");
+        const heading = createNode("h3", post.section === "freinet" ? "ΝΕΑ ΤΟΥ ΔΙΚΤΥΟΥ" : "ΠΡΟΣΕΧΩΣ");
         heading.id = `upcoming-${post.section}`;
         listing.setAttribute("aria-labelledby", heading.id);
         grid = createNode("div", undefined, "activity-cards");
@@ -348,7 +349,7 @@ export function renderContent(content) {
         image.loading = "lazy";
         card.append(image);
       } else {
-        card.append(createNode("div", "Ξ", "activity-card-placeholder"));
+        card.append(createNode("div", post.section === "freinet" ? "✳" : "Ξ", "activity-card-placeholder"));
       }
       const copy = createNode("div", undefined, "activity-card-copy");
       const title = createNode("h3", post.title);
