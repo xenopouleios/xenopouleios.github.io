@@ -130,6 +130,8 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .published-post time { display: block; margin-bottom: 12px; font-size: 12px; color: var(--muted); }
 #nea.current-section { grid-template-columns: 1fr; }
 #nea.current-section > .detail-media { display: none; }
+#freinet.current-section:has(> .detail-media:empty) { grid-template-columns: 1fr; }
+#freinet.current-section > .detail-media:empty { display: none; }
 .announcement-card { margin-top: 22px; padding: 30px 32px; border: 1px solid #293e3414; background: #fffdf8; box-shadow: 0 8px 24px #293e340a; }
 .announcement-card > h3 { margin: 0 0 14px; font: bold clamp(24px, 2.5vw, 34px)/1.18 var(--serif); letter-spacing: -.4px; }
 .announcement-card > time { margin: 0; font-size: 13px; }
@@ -153,6 +155,8 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .activity-card-copy h3 { margin: 0 0 10px; font-size: 19px; }
 .activity-card-copy p { margin: 0 0 18px; font-size: 12px; line-height: 1.65; }
 .activity-card-link { margin-top: auto; color: var(--terracotta); font-size: 11px; font-weight: bold; text-decoration: underline; text-underline-offset: 4px; }
+.freinet-meeting-card { cursor: default; }
+.freinet-meeting-card:hover { transform: none; border-color: var(--line); box-shadow: none; }
 .activity-detail { min-height: 65vh; padding-block: 20px 70px; }
 .activity-article { max-width: 1050px; margin: 20px auto 0; }
 .activity-article > time { display: block; margin-bottom: 14px; color: var(--muted); font-size: 13px; }

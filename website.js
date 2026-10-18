@@ -327,19 +327,36 @@ export function renderContent(content) {
     }
   }
   const activityGrids = new Map();
+  function cardGrid(section) {
+    let grid = activityGrids.get(section);
+    if (grid) return grid;
+    const listing = createNode("section", undefined, "activity-listing");
+    const heading = createNode("h3", section === "freinet" ? "ΣΥΝΑΝΤΗΣΕΙΣ ΤΟΥ ΔΙΚΤΥΟΥ" : "ΠΡΟΣΕΧΩΣ");
+    heading.id = `upcoming-${section}`;
+    listing.setAttribute("aria-labelledby", heading.id);
+    grid = createNode("div", undefined, "activity-cards");
+    listing.append(heading, grid);
+    document.querySelector(`#${section}`).append(listing);
+    activityGrids.set(section, grid);
+    return grid;
+  }
+
+  const currentFreinetImage = document.querySelector("#freinet .detail-media .content-image");
+  if (currentFreinetImage) {
+    const card = createNode("article", undefined, "activity-card freinet-meeting-card");
+    currentFreinetImage.className = "";
+    const copy = createNode("div", undefined, "activity-card-copy");
+    copy.append(
+      createNode("h3", "1η συνάντηση του Δικτύου Freinet"),
+      createNode("p", "Η πρώτη συνάντηση του Δικτύου Freinet Ζακύνθου."),
+    );
+    card.append(currentFreinetImage, copy);
+    cardGrid("freinet").append(card);
+  }
+
   for (const post of [...content.posts].sort((a, b) => b.date.localeCompare(a.date))) {
     if (cardSections.has(post.section)) {
-      let grid = activityGrids.get(post.section);
-      if (!grid) {
-        const listing = createNode("section", undefined, "activity-listing");
-        const heading = createNode("h3", post.section === "freinet" ? "ΝΕΑ ΤΟΥ ΔΙΚΤΥΟΥ" : "ΠΡΟΣΕΧΩΣ");
-        heading.id = `upcoming-${post.section}`;
-        listing.setAttribute("aria-labelledby", heading.id);
-        grid = createNode("div", undefined, "activity-cards");
-        listing.append(heading, grid);
-        document.querySelector(`#${post.section}`).append(listing);
-        activityGrids.set(post.section, grid);
-      }
+      const grid = cardGrid(post.section);
       const card = createNode("a", undefined, "activity-card");
       card.href = activityUrl(post.id);
       if (post.image) {
