@@ -18,6 +18,10 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(website, /Προεπισκόπηση — δεν καταχωρίζονται δηλώσεις συμμετοχής/);
   assert.match(website, /"activity-content"/);
   assert.match(website, /"ΠΡΟΣΕΧΩΣ"/);
+  assert.match(website, /"ΠΡΟΗΓΟΥΜΕΝΕΣ ΔΡΑΣΕΙΣ"/);
+  assert.match(website, /post\.date >= today/);
+  assert.match(website, /viewport\.scrollBy/);
+  assert.match(website, /"activity-carousel-next"/);
   assert.match(website, /"ΣΥΝΑΝΤΗΣΕΙΣ ΤΟΥ ΔΙΚΤΥΟΥ"/);
 });
 

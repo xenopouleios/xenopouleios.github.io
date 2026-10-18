@@ -329,24 +329,69 @@ export function renderContent(content) {
       else document.querySelector(`#${id} .detail-media`).append(img);
     }
   }
+  const now = new Date();
+  const today = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+  ].join("-");
   const activityGrids = new Map();
-  function cardGrid(section) {
-    let grid = activityGrids.get(section);
+  function cardGrid(section, period = "all") {
+    const key = `${section}:${period}`;
+    let grid = activityGrids.get(key);
     if (grid) return grid;
     const listing = createNode("section", undefined, "activity-listing");
-    const heading = createNode("h3", section === "freinet" ? "ΣΥΝΑΝΤΗΣΕΙΣ ΤΟΥ ΔΙΚΤΥΟΥ" : "ΠΡΟΣΕΧΩΣ");
-    heading.id = `upcoming-${section}`;
+    const headingText = section === "freinet"
+      ? "ΣΥΝΑΝΤΗΣΕΙΣ ΤΟΥ ΔΙΚΤΥΟΥ"
+      : period === "previous" ? "ΠΡΟΗΓΟΥΜΕΝΕΣ ΔΡΑΣΕΙΣ" : "ΠΡΟΣΕΧΩΣ";
+    const headingRow = createNode("div", undefined, "activity-listing-heading");
+    const heading = createNode("h3", headingText);
+    heading.id = `${period}-${section}`;
     listing.setAttribute("aria-labelledby", heading.id);
+    const viewport = createNode("div", undefined, "activity-carousel");
     grid = createNode("div", undefined, "activity-cards");
-    listing.append(heading, grid);
+    viewport.append(grid);
+    const next = createNode("button", "→", "activity-carousel-next");
+    next.type = "button";
+    next.setAttribute("aria-label", `Επόμενες κάρτες: ${headingText.toLocaleLowerCase("el-GR")}`);
+    const updateNext = () => {
+      next.hidden = viewport.scrollWidth <= viewport.clientWidth + 1;
+      next.disabled = Math.ceil(viewport.scrollLeft + viewport.clientWidth) >= viewport.scrollWidth - 1;
+    };
+    next.addEventListener("click", () => {
+      viewport.scrollBy({
+        left: viewport.clientWidth,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
+    });
+    viewport.addEventListener("scroll", updateNext, { passive: true });
+    new ResizeObserver(updateNext).observe(viewport);
+    headingRow.append(heading, next);
+    listing.append(headingRow, viewport);
     document.querySelector(`#${section}`).append(listing);
-    activityGrids.set(section, grid);
+    activityGrids.set(key, grid);
+    requestAnimationFrame(updateNext);
     return grid;
   }
 
-  for (const post of [...content.posts].sort((a, b) => b.date.localeCompare(a.date))) {
+  for (const section of activitySections) {
+    cardGrid(section, "upcoming");
+    cardGrid(section, "previous");
+  }
+  const upcomingActivities = content.posts
+    .filter(post => activitySections.has(post.section) && post.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const previousActivities = content.posts
+    .filter(post => activitySections.has(post.section) && post.date < today)
+    .sort((a, b) => b.date.localeCompare(a.date));
+  const otherPosts = content.posts
+    .filter(post => !activitySections.has(post.section))
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  for (const post of [...upcomingActivities, ...previousActivities, ...otherPosts]) {
     if (cardSections.has(post.section)) {
-      const grid = cardGrid(post.section);
+      const period = activitySections.has(post.section) ? (post.date >= today ? "upcoming" : "previous") : "all";
+      const grid = cardGrid(post.section, period);
       const card = createNode("a", undefined, "activity-card");
       card.href = activityUrl(post.id);
       if (post.image) {
