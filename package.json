@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "prepare:blog": "node scripts/prepare-blog.mjs",
-    "build": "npm run prepare:blog && vite build",
+    "refresh:blog": "node scripts/prepare-blog.mjs",
+    "build": "vite build",
     "test": "node --test"
   },
   "dependencies": {

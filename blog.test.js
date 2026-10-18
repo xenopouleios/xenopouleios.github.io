@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const importer = await readFile(new URL("./scripts/prepare-blog.mjs", import.meta.url), "utf8");
 const archive = await readFile(new URL("./blog-archive.js", import.meta.url), "utf8");
 const workflow = await readFile(new URL("./.github/workflows/pages.yml", import.meta.url), "utf8");
+const packageJson = await readFile(new URL("./package.json", import.meta.url), "utf8");
 
 test("blog import sanitizes complete Blogger posts", () => {
   assert.match(importer, /sanitizeHtml\(html/);
@@ -29,7 +30,9 @@ test("blog archive renders full posts in bounded pages", () => {
   assert.match(archive, /validateArchive\(archive\)/);
 });
 
-test("blog archive refreshes through a scheduled deployment", () => {
-  assert.match(workflow, /schedule:/);
-  assert.match(workflow, /cron: "17 3 \* \* \*"/);
+test("blog archive is a static snapshot managed by the website admin", () => {
+  assert.doesNotMatch(workflow, /schedule:/);
+  assert.match(packageJson, /"refresh:blog": "node scripts\/prepare-blog\.mjs"/);
+  assert.match(packageJson, /"build": "vite build"/);
+  assert.doesNotMatch(packageJson, /"build": "npm run (?:prepare|refresh):blog/);
 });
