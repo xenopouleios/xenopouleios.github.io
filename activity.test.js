@@ -19,7 +19,6 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(website, /"activity-content"/);
   assert.match(website, /"ΠΡΟΣΕΧΩΣ"/);
   assert.match(website, /"ΣΥΝΑΝΤΗΣΕΙΣ ΤΟΥ ΔΙΚΤΥΟΥ"/);
-  assert.match(website, /"1η συνάντηση του Δικτύου Freinet"/);
 });
 
 test("activity publishing controls summaries and registration availability", () => {

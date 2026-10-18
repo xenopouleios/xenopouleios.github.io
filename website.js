@@ -341,19 +341,6 @@ export function renderContent(content) {
     return grid;
   }
 
-  const currentFreinetImage = document.querySelector("#freinet .detail-media .content-image");
-  if (currentFreinetImage) {
-    const card = createNode("article", undefined, "activity-card freinet-meeting-card");
-    currentFreinetImage.className = "";
-    const copy = createNode("div", undefined, "activity-card-copy");
-    copy.append(
-      createNode("h3", "1η συνάντηση του Δικτύου Freinet"),
-      createNode("p", "Η πρώτη συνάντηση του Δικτύου Freinet Ζακύνθου."),
-    );
-    card.append(currentFreinetImage, copy);
-    cardGrid("freinet").append(card);
-  }
-
   for (const post of [...content.posts].sort((a, b) => b.date.localeCompare(a.date))) {
     if (cardSections.has(post.section)) {
       const grid = cardGrid(post.section);
