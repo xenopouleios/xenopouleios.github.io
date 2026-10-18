@@ -65,7 +65,7 @@ test("activity posts support card summaries and controlled registration", () => 
   const legacy = emptyContent();
   legacy.posts = [{ ...post(), section: "draseis-enilikes", body: "Αναλυτικό κείμενο παλιότερης δράσης." }];
   const normalized = normalizeContent(legacy);
-  assert.equal(normalized.posts[0].event_date, normalized.posts[0].date);
+  assert.equal(Object.hasOwn(normalized.posts[0], "event_date"), false);
   assert.equal(normalized.posts[0].activity_period, "upcoming");
   assert.equal(normalized.posts[0].summary, "Αναλυτικό κείμενο παλιότερης δράσης.");
   assert.equal(normalized.posts[0].registration_open, false);

@@ -338,7 +338,6 @@ function editPost(post, root) {
     else delete post.activity_period;
     if (cardSections.has(post.section)) {
       post.summary ??= "";
-      post.event_date ??= post.date;
     } else {
       delete post.summary;
       delete post.event_date;
@@ -354,7 +353,10 @@ function editPost(post, root) {
   field(form, "post-title", "Τίτλος ανάρτησης", post.title, value => { post.title = value; }, { maxLength: 300, required: true });
   field(form, "post-date", "Ημερομηνία ανάρτησης", post.date, value => { post.date = value; }, { type: "date", required: true });
   if (cardSections.has(post.section)) {
-    field(form, "post-event-date", "Ημερομηνία διεξαγωγής", post.event_date ?? post.date, value => { post.event_date = value; }, { type: "date", required: true });
+    field(form, "post-event-date", "Ημερομηνία διεξαγωγής (προαιρετική)", post.event_date ?? "", value => {
+      if (value) post.event_date = value;
+      else delete post.event_date;
+    }, { type: "date" });
   }
   if (ageRangeSections.has(post.section)) {
     field(form, "post-age-range", "Ηλικίες στις οποίες απευθύνεται", post.age_range ?? "", value => { post.age_range = value; }, { maxLength: 100 });

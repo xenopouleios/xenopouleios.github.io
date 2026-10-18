@@ -185,9 +185,13 @@ function createActivityCard(post, href, placeholder = "Ξ") {
 
 function sortActivityGrid(grid, ascending) {
   const cards = [...grid.querySelectorAll(".activity-card")];
-  cards.sort((a, b) => ascending
-    ? a.dataset.activityDate.localeCompare(b.dataset.activityDate)
-    : b.dataset.activityDate.localeCompare(a.dataset.activityDate));
+  cards.sort((a, b) => {
+    const aDate = a.dataset.activityDate;
+    const bDate = b.dataset.activityDate;
+    if (!aDate) return bDate ? 1 : 0;
+    if (!bDate) return -1;
+    return ascending ? aDate.localeCompare(bDate) : bDate.localeCompare(aDate);
+  });
   grid.append(...cards);
 }
 
@@ -504,15 +508,17 @@ export function renderContent(content) {
         : "all";
       const grid = cardGrid(post.section, period);
       const card = createActivityCard(post, activityUrl(post.id), post.section === "freinet" ? "✳" : "Ξ");
-      card.dataset.activityDate = post.event_date;
+      if (post.event_date) card.dataset.activityDate = post.event_date;
       const meta = createNode("div", undefined, "activity-card-meta");
       if (ageRangeSections.has(post.section) && post.age_range?.trim()) {
         meta.append(createNode("span", post.age_range.trim()));
       }
-      const eventDate = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(post.event_date)));
-      eventDate.dateTime = post.event_date;
-      meta.append(eventDate);
-      card.prepend(meta);
+      if (post.event_date) {
+        const eventDate = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(post.event_date)));
+        eventDate.dateTime = post.event_date;
+        meta.append(eventDate);
+      }
+      if (meta.children.length) card.prepend(meta);
       grid.append(card);
       sortActivityGrid(grid, period === "upcoming");
       grid.dispatchEvent(new Event("cardschange"));

@@ -176,7 +176,6 @@ export function normalizeContent(content, defaults = {}) {
     if (!cardSections.has(post.section)) return post;
     const normalizedPost = {
       ...post,
-      event_date: post.event_date ?? post.date,
       summary: post.summary ?? post.body.replace(/\s+/g, " ").trim().slice(0, 240),
     };
     if (activitySections.has(post.section)) {

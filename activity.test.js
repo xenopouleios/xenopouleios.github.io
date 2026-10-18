@@ -52,9 +52,9 @@ test("activity publishing controls summaries and registration availability", () 
   assert.match(admin, /post\.activity_period = activityPeriod/);
   assert.match(admin, /cardSections\.has\(post\.section\)/);
   assert.match(admin, /Οι δηλώσεις συμμετοχής είναι ανοικτές/);
-  assert.match(admin, /"Ημερομηνία διεξαγωγής"/);
   assert.match(admin, /"Ημερομηνία ανάρτησης"/);
   assert.match(admin, /"post-event-date"/);
+  assert.match(admin, /"Ημερομηνία διεξαγωγής \(προαιρετική\)"/);
   assert.match(admin, /"Ηλικίες στις οποίες απευθύνεται"/);
   assert.match(admin, /ageRangeSections\.has\(post\.section\)/);
   assert.match(admin, /mountActivityAdmin/);
