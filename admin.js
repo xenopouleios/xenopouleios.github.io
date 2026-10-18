@@ -324,8 +324,13 @@ function editPost(post, root) {
   select.addEventListener("change", () => {
     rememberChange(`post-section-${post.id}-${crypto.randomUUID()}`);
     post.section = select.value;
-    if (cardSections.has(post.section)) post.summary ??= "";
-    else delete post.summary;
+    if (cardSections.has(post.section)) {
+      post.summary ??= "";
+      post.event_date ??= post.date;
+    } else {
+      delete post.summary;
+      delete post.event_date;
+    }
     if (activitySections.has(post.section)) post.registration_open ??= false;
     else delete post.registration_open;
     if (ageRangeSections.has(post.section)) post.age_range ??= "";
@@ -335,7 +340,10 @@ function editPost(post, root) {
   });
   form.append(label, select);
   field(form, "post-title", "Τίτλος ανάρτησης", post.title, value => { post.title = value; }, { maxLength: 300, required: true });
-  field(form, "post-date", cardSections.has(post.section) ? "Ημερομηνία διεξαγωγής" : "Ημερομηνία", post.date, value => { post.date = value; }, { type: "date", required: true });
+  field(form, "post-date", "Ημερομηνία ανάρτησης", post.date, value => { post.date = value; }, { type: "date", required: true });
+  if (cardSections.has(post.section)) {
+    field(form, "post-event-date", "Ημερομηνία διεξαγωγής", post.event_date ?? post.date, value => { post.event_date = value; }, { type: "date", required: true });
+  }
   if (ageRangeSections.has(post.section)) {
     field(form, "post-age-range", "Ηλικίες στις οποίες απευθύνεται", post.age_range ?? "", value => { post.age_range = value; }, { maxLength: 100 });
   }

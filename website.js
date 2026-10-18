@@ -313,8 +313,9 @@ async function renderActivityDetail(posts) {
   const back = createNode("a", `← ${sections.find(([id]) => id === post.section)[1]}`, "back-home");
   back.href = pageUrl(post.section);
   const article = createNode("article", undefined, "activity-article");
-  const time = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "long", timeZone: "UTC" }).format(new Date(post.date)));
-  time.dateTime = post.date;
+  const detailDate = post.event_date ?? post.date;
+  const time = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "long", timeZone: "UTC" }).format(new Date(detailDate)));
+  time.dateTime = detailDate;
   const title = createNode("h1", post.title);
   article.append(time, title);
   const activityContent = createNode("div", undefined, "activity-content");
@@ -480,8 +481,8 @@ export function renderContent(content) {
       if (ageRangeSections.has(post.section) && post.age_range?.trim()) {
         meta.append(createNode("span", `Ηλικίες: ${post.age_range.trim()}`));
       }
-      const eventDate = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(post.date)));
-      eventDate.dateTime = post.date;
+      const eventDate = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(post.event_date)));
+      eventDate.dateTime = post.event_date;
       meta.append(eventDate);
       card.prepend(meta);
       grid.append(card);

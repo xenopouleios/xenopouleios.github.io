@@ -50,6 +50,7 @@ test("activity posts support card summaries and controlled registration", () => 
   const activity = {
     ...post(),
     section: "draseis-paidia",
+    event_date: "2026-10-20",
     summary: "Μια σύντομη παρουσίαση της δράσης.",
     registration_open: true,
     age_range: "6–10 ετών",
@@ -63,6 +64,7 @@ test("activity posts support card summaries and controlled registration", () => 
   const legacy = emptyContent();
   legacy.posts = [{ ...post(), section: "draseis-enilikes", body: "Αναλυτικό κείμενο παλιότερης δράσης." }];
   const normalized = normalizeContent(legacy);
+  assert.equal(normalized.posts[0].event_date, normalized.posts[0].date);
   assert.equal(normalized.posts[0].summary, "Αναλυτικό κείμενο παλιότερης δράσης.");
   assert.equal(normalized.posts[0].registration_open, false);
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, summary: "" }] }));
@@ -70,11 +72,12 @@ test("activity posts support card summaries and controlled registration", () => 
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, age_range: "α".repeat(101) }] }));
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, section: "draseis-enilikes" }] }));
   const freinet = emptyContent();
-  freinet.posts = [{ ...post(), section: "freinet", body: "Αναλυτικό κείμενο του Δικτύου Freinet.", age_range: "Εκπαιδευτικοί και γονείς" }];
+  freinet.posts = [{ ...post(), section: "freinet", body: "Αναλυτικό κείμενο του Δικτύου Freinet.", event_date: "2026-10-22", age_range: "Εκπαιδευτικοί και γονείς" }];
   assert.equal(validateContent(freinet), freinet);
   assert.equal(normalizeContent(freinet).posts[0].summary, "Αναλυτικό κείμενο του Δικτύου Freinet.");
   assert.throws(() => validateContent({ ...freinet, posts: [{ ...freinet.posts[0], registration_open: true }] }));
   assert.throws(() => validateContent({ ...freinet, posts: [{ ...freinet.posts[0], age_range: "α".repeat(101) }] }));
+  assert.throws(() => validateContent({ ...freinet, posts: [{ ...freinet.posts[0], event_date: "22/10/2026" }] }));
 });
 
 test("malformed documents and unknown fields are rejected", () => {
