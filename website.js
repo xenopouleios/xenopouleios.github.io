@@ -531,11 +531,6 @@ export function renderContent(content) {
       if (usesAgeRange(post) && post.age_range?.trim()) {
         meta.append(createNode("span", post.age_range.trim()));
       }
-      if (post.event_date) {
-        const eventDate = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(post.event_date)));
-        eventDate.dateTime = post.event_date;
-        meta.append(eventDate);
-      }
       if (meta.children.length) card.prepend(meta);
       grid.append(card);
       sortActivityGrid(grid, period === "upcoming");
