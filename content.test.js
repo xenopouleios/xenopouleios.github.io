@@ -14,6 +14,7 @@ test("baseline and all editable sections are accepted", () => {
   assert.deepEqual(new Set(menuPages), new Set(sections.map(([id]) => id).filter(id => id !== "stigmes-draseon")));
   assert.equal(menuPages.includes("stigmes-draseon"), false);
   assert.equal(menuPages.length, sections.length - 1);
+  assert.equal(allFields.some(([id]) => id === "stigmes-draseon-nav"), false);
   const content = emptyContent();
   for (const [id] of allFields) content.fields[id] = "Κείμενο";
   content.posts = [post()];
