@@ -51,6 +51,7 @@ test("activity posts support card summaries and controlled registration", () => 
     ...post(),
     section: "draseis-paidia",
     event_date: "2026-10-20",
+    activity_period: "previous",
     summary: "Μια σύντομη παρουσίαση της δράσης.",
     registration_open: true,
     age_range: "6–10 ετών",
@@ -65,11 +66,13 @@ test("activity posts support card summaries and controlled registration", () => 
   legacy.posts = [{ ...post(), section: "draseis-enilikes", body: "Αναλυτικό κείμενο παλιότερης δράσης." }];
   const normalized = normalizeContent(legacy);
   assert.equal(normalized.posts[0].event_date, normalized.posts[0].date);
+  assert.equal(normalized.posts[0].activity_period, "upcoming");
   assert.equal(normalized.posts[0].summary, "Αναλυτικό κείμενο παλιότερης δράσης.");
   assert.equal(normalized.posts[0].registration_open, false);
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, summary: "" }] }));
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, registration_open: "yes" }] }));
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, age_range: "α".repeat(101) }] }));
+  assert.throws(() => validateContent({ ...content, posts: [{ ...activity, activity_period: "past" }] }));
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, section: "draseis-enilikes" }] }));
   const freinet = emptyContent();
   freinet.posts = [{ ...post(), section: "freinet", body: "Αναλυτικό κείμενο του Δικτύου Freinet.", event_date: "2026-10-22", age_range: "Εκπαιδευτικοί και γονείς" }];

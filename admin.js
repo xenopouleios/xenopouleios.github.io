@@ -26,6 +26,12 @@ let recovery = linkType === "recovery" || linkType === "invite";
 const previewId = crypto.randomUUID();
 const activityRegistrationsEnabled = import.meta.env.VITE_ACTIVITY_REGISTRATIONS_ENABLED === "true";
 const editableSections = sections.filter(([id]) => id !== "stigmes-draseon");
+const postDestinations = editableSections.flatMap(([id, title]) => activitySections.has(id)
+  ? [
+      [`${id}:upcoming`, `${title} — Προσεχώς`],
+      [`${id}:previous`, `${title} — Προηγούμενες δράσεις`],
+    ]
+  : [[id, title]]);
 const undoHistory = createUndoHistory();
 const contentEditors = () => active === "home" || active === "posts" || sections.some(([id]) => id === active);
 
@@ -292,7 +298,9 @@ function renderPosts(root) {
   if (!content.posts.length) root.append(element("p", "Δεν υπάρχουν ακόμη αναρτήσεις. Πατήστε «Νέα ανάρτηση» για να ξεκινήσετε.", "hint"));
   for (const post of content.posts) {
     const row = element("div", undefined, "post-summary");
-    row.append(element("h3", post.title || "Νέα ανάρτηση — χωρίς τίτλο ακόμη"), element("p", `${sections.find(([id]) => id === post.section)[1]} · ${post.date}`, "hint"));
+    const destination = activitySections.has(post.section) ? `${post.section}:${post.activity_period ?? "upcoming"}` : post.section;
+    const destinationLabel = postDestinations.find(([value]) => value === destination)?.[1] ?? sections.find(([id]) => id === post.section)[1];
+    row.append(element("h3", post.title || "Νέα ανάρτηση — χωρίς τίτλο ακόμη"), element("p", `${destinationLabel} · ${post.date}`, "hint"));
     const actions = element("div", undefined, "actions");
     actions.append(button("Επεξεργασία", () => editPost(post, root)), button("Διαγραφή", async () => {
       if (await confirmAction("Η ανάρτηση θα αφαιρεθεί όταν δημοσιεύσετε τις αλλαγές. Να συνεχίσουμε;", "Διαγραφή ανάρτησης;")) {
@@ -316,15 +324,18 @@ function editPost(post, root) {
   label.htmlFor = "post-section";
   const select = element("select");
   select.id = "post-section";
-  for (const [id, title] of editableSections) {
+  for (const [id, title] of postDestinations) {
     const option = element("option", title);
     option.value = id;
     select.append(option);
   }
-  select.value = post.section;
+  select.value = activitySections.has(post.section) ? `${post.section}:${post.activity_period ?? "upcoming"}` : post.section;
   select.addEventListener("change", () => {
     rememberChange(`post-section-${post.id}-${crypto.randomUUID()}`);
-    post.section = select.value;
+    const [section, activityPeriod] = select.value.split(":");
+    post.section = section;
+    if (activitySections.has(post.section)) post.activity_period = activityPeriod;
+    else delete post.activity_period;
     if (cardSections.has(post.section)) {
       post.summary ??= "";
       post.event_date ??= post.date;
@@ -496,7 +507,7 @@ $("preview").addEventListener("click", () => {
   try {
     validateContent(content);
     sessionStorage.setItem(`xenopouleio-preview-${previewId}`, JSON.stringify(content));
-    const previewSection = active === "books" ? "daneistiki" : active === "posts" ? $("post-section")?.value || content.posts[0]?.section || "nea" : active;
+    const previewSection = active === "books" ? "daneistiki" : active === "posts" ? ($("post-section")?.value || content.posts[0]?.section || "nea").split(":")[0] : active;
     const url = new URL(sections.some(([id]) => id === previewSection) ? `../${previewSection}.html` : "../", location.href);
     url.searchParams.set("preview", previewId);
     $("preview-frame").src = url.href;

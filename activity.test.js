@@ -24,7 +24,7 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(website, /"activity-carousel-next"/);
   assert.match(website, /"Δείτε όλες"/);
   assert.match(website, /function sortActivityGrid\(grid, ascending\)/);
-  assert.match(website, /post\.event_date >= today \? "upcoming" : "previous"/);
+  assert.match(website, /\? post\.activity_period/);
   assert.match(website, /sortActivityGrid\(grid, period === "upcoming"\)/);
   assert.match(website, /sortActivityGrid\(grid, false\)/);
   assert.match(website, /mountPreviousActivityArchive\(activityGrids\)/);
@@ -47,6 +47,9 @@ test("activity cards link to details with category-specific registration forms",
 test("activity publishing controls summaries and registration availability", () => {
   assert.match(admin, /Λίγα λόγια για την κάρτα/);
   assert.match(admin, /sections\.filter\(\(\[id\]\) => id !== "stigmes-draseon"\)/);
+  assert.match(admin, /`\$\{id\}:upcoming`/);
+  assert.match(admin, /`\$\{id\}:previous`/);
+  assert.match(admin, /post\.activity_period = activityPeriod/);
   assert.match(admin, /cardSections\.has\(post\.section\)/);
   assert.match(admin, /Οι δηλώσεις συμμετοχής είναι ανοικτές/);
   assert.match(admin, /"Ημερομηνία διεξαγωγής"/);

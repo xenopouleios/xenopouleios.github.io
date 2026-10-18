@@ -497,12 +497,10 @@ export function renderContent(content) {
     cardGrid(section, "upcoming");
     cardGrid(section, "previous");
   }
-  const now = new Date();
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   for (const post of [...content.posts].sort((a, b) => b.date.localeCompare(a.date))) {
     if (cardSections.has(post.section)) {
       const period = activitySections.has(post.section)
-        ? post.event_date >= today ? "upcoming" : "previous"
+        ? post.activity_period
         : "all";
       const grid = cardGrid(post.section, period);
       const card = createActivityCard(post, activityUrl(post.id), post.section === "freinet" ? "✳" : "Ξ");
