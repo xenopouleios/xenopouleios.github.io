@@ -55,8 +55,12 @@ form > button { margin: 24px 10px 0 0; }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .publish-bar { position: sticky; bottom: 0; padding: 20px 24px; margin-top: 24px; border: 1px solid #bdc7b8; background: #fafff7; border-radius: 10px; box-shadow: 0 -4px 24px #243c3212; display: flex; justify-content: space-between; align-items: center; gap: 20px; z-index: 2; }
 .publish-bar p { margin: 0; font-size: 16px; }
-.post-summary { padding: 22px 0; border-bottom: 1px solid #d9ded5; }
-.post-summary h3 { margin: 0 0 8px; overflow-wrap: anywhere; }
+.post-summary { padding: 14px 0; border-bottom: 1px solid #d9ded5; }
+.post-summary-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px; }
+.post-summary h3 { margin: 0; font-size: 17px; line-height: 1.35; overflow-wrap: anywhere; }
+.post-summary .hint { margin: 3px 0 0; font-size: 13px; }
+.post-summary .actions { flex-wrap: nowrap; gap: 7px; }
+.post-summary button { min-height: 36px; padding: 6px 11px; border-width: 1px; border-radius: 5px; font-size: 13px; }
 .post-form { margin-top: 30px; padding-top: 24px; border-top: 2px solid #d9ded5; }
 .archive-search { display: grid; grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr) auto; align-items: end; gap: 16px; margin-bottom: 20px; }
 .archive-search label { margin: 0; }
@@ -87,4 +91,5 @@ dialog::backdrop { background: #15271ac9; }
   .workspace-heading { flex-direction: column; margin-bottom: 20px; }
   .password-row { flex-wrap: wrap; }
   .actions { flex-direction: column; align-items: stretch; }
+  .post-summary .actions { flex-direction: row; align-items: center; }
 }

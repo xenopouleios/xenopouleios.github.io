@@ -340,7 +340,8 @@ function renderPosts(root) {
     const row = element("div", undefined, "post-summary");
     const destination = activitySections.has(post.section) ? `${post.section}:${post.activity_period ?? "upcoming"}` : post.section;
     const destinationLabel = postDestinations.find(([value]) => value === destination)?.[1] ?? sections.find(([id]) => id === post.section)[1];
-    row.append(element("h3", post.title || "Νέα ανάρτηση — χωρίς τίτλο ακόμη"), element("p", `${destinationLabel} · ${post.date}`, "hint"));
+    const header = element("div", undefined, "post-summary-header");
+    header.append(element("h3", post.title || "Νέα ανάρτηση — χωρίς τίτλο ακόμη"));
     const actions = element("div", undefined, "actions");
     actions.append(button("Επεξεργασία", () => editPost(post, root)), button("Διαγραφή", async () => {
       if (await confirmAction("Η ανάρτηση θα αφαιρεθεί όταν δημοσιεύσετε τις αλλαγές. Να συνεχίσουμε;", "Διαγραφή ανάρτησης;")) {
@@ -350,7 +351,8 @@ function renderPosts(root) {
         renderEditor(false);
       }
     }, "danger"));
-    row.append(actions);
+    header.append(actions);
+    row.append(header, element("p", `${destinationLabel} · ${post.date}`, "hint"));
     root.append(row);
   }
 }
