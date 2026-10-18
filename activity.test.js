@@ -49,6 +49,8 @@ test("activity cards link to details with category-specific registration forms",
 test("activity publishing controls summaries and registration availability", () => {
   assert.match(admin, /Λίγα λόγια για την κάρτα/);
   assert.match(admin, /sections\.filter\(\(\[id\]\) => id !== "stigmes-draseon"\)/);
+  assert.match(admin, /new Set\(\["draseis-paidia", "draseis-enilikes", "ekdiloseis", "freinet", "nea"\]\)/);
+  assert.match(admin, /postDestinationSectionIds\.has\(id\)/);
   assert.match(admin, /`\$\{id\}:upcoming`/);
   assert.match(admin, /`\$\{id\}:previous`/);
   assert.match(admin, /post\.activity_period = activityPeriod/);

@@ -27,7 +27,8 @@ let recovery = linkType === "recovery" || linkType === "invite";
 const previewId = crypto.randomUUID();
 const activityRegistrationsEnabled = import.meta.env.VITE_ACTIVITY_REGISTRATIONS_ENABLED === "true";
 const editableSections = sections.filter(([id]) => id !== "stigmes-draseon");
-const postDestinations = editableSections.flatMap(([id, title]) => activitySections.has(id)
+const postDestinationSectionIds = new Set(["draseis-paidia", "draseis-enilikes", "ekdiloseis", "freinet", "nea"]);
+const postDestinations = editableSections.filter(([id]) => postDestinationSectionIds.has(id)).flatMap(([id, title]) => activitySections.has(id)
   ? [
       [`${id}:upcoming`, `${title} — Προσεχώς`],
       [`${id}:previous`, `${title} — Προηγούμενες δράσεις`],
@@ -371,7 +372,15 @@ function editPost(post, root) {
     option.value = id;
     select.append(option);
   }
-  select.value = activitySections.has(post.section) ? `${post.section}:${post.activity_period ?? "upcoming"}` : post.section;
+  const currentDestination = activitySections.has(post.section) ? `${post.section}:${post.activity_period ?? "upcoming"}` : post.section;
+  if (!postDestinations.some(([id]) => id === currentDestination)) {
+    const currentTitle = sections.find(([id]) => id === post.section)?.[1] ?? post.section;
+    const option = element("option", `Υφιστάμενη θέση — ${currentTitle}`);
+    option.value = currentDestination;
+    option.hidden = true;
+    select.append(option);
+  }
+  select.value = currentDestination;
   select.addEventListener("change", () => {
     rememberChange(`post-section-${post.id}-${crypto.randomUUID()}`);
     const [section, activityPeriod] = select.value.split(":");
