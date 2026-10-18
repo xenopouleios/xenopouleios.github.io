@@ -15,26 +15,54 @@ function validatePosts(posts) {
 
 function createPost(post) {
   const article = document.createElement("article");
-  article.className = "blog-post";
-  const details = document.createElement("details");
-  const summary = document.createElement("summary");
+  article.className = "blog-post announcement-card";
   const heading = document.createElement("h3");
   heading.textContent = post.title;
   const time = document.createElement("time");
   time.dateTime = post.date;
   time.textContent = new Intl.DateTimeFormat("el-GR", { dateStyle: "long", timeZone: "UTC" }).format(new Date(post.date));
-  summary.append(heading, time);
+  article.append(heading, time);
+
+  const layout = document.createElement("div");
+  layout.className = "announcement-content";
   const content = document.createElement("div");
-  content.className = "blog-post-content";
+  content.className = "blog-post-content announcement-body is-collapsed";
   content.innerHTML = post.content;
+  const firstImage = content.querySelector("img");
+  if (firstImage) {
+    const imageContainer = firstImage.closest("a");
+    firstImage.className = "content-image";
+    firstImage.removeAttribute("width");
+    firstImage.removeAttribute("height");
+    layout.append(firstImage);
+    if (imageContainer && !imageContainer.textContent.trim() && !imageContainer.querySelector("img")) imageContainer.remove();
+  }
+
+  const copy = document.createElement("div");
+  copy.className = "announcement-copy";
+  copy.append(content);
   const source = document.createElement("a");
   source.className = "blog-post-source";
   source.href = post.originalUrl;
   source.target = "_blank";
   source.rel = "noopener noreferrer";
   source.textContent = "Αρχική δημοσίευση ↗";
-  details.append(summary, content, source);
-  article.append(details);
+  content.append(source);
+
+  const more = document.createElement("button");
+  more.className = "announcement-more";
+  more.type = "button";
+  more.setAttribute("aria-expanded", "false");
+  more.textContent = "ΔΙΑΒΑΣΤΕ ΠΕΡΙΣΣΟΤΕΡΑ →";
+  more.addEventListener("click", () => {
+    const expanded = more.getAttribute("aria-expanded") === "true";
+    more.setAttribute("aria-expanded", String(!expanded));
+    more.textContent = expanded ? "ΔΙΑΒΑΣΤΕ ΠΕΡΙΣΣΟΤΕΡΑ →" : "ΛΙΓΟΤΕΡΑ ↑";
+    content.classList.toggle("is-collapsed", expanded);
+  });
+  copy.append(more);
+  layout.append(copy);
+  article.append(layout);
   return article;
 }
 

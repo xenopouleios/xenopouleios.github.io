@@ -139,20 +139,16 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .blog-archive-mount { margin-top: 34px; }
 .blog-archive-mount.is-error { padding: 18px; border-left: 4px solid var(--terracotta); background: #fff0e9; color: #8b3527; }
 .blog-posts { display: grid; gap: 20px; }
-.blog-post { border: 1px solid var(--line); background: #fffdf8; box-shadow: 0 8px 24px #293e340a; }
-.blog-post summary { position: relative; padding: 24px 64px 24px 26px; cursor: pointer; list-style: none; }
-.blog-post summary::-webkit-details-marker { display: none; }
-.blog-post summary::after { content: "+"; position: absolute; top: 50%; right: 26px; color: var(--terracotta); font: 32px/1 var(--serif); transform: translateY(-50%); }
-.blog-post details[open] summary::after { content: "−"; }
-.blog-post summary h3 { margin: 0 0 8px; font: bold clamp(21px, 2.4vw, 30px)/1.25 var(--serif); }
-.blog-post summary time { color: var(--muted); font-size: 12px; }
-.blog-post-content { padding: 8px 26px 28px; border-top: 1px solid var(--line); color: var(--muted); font-size: 15px; line-height: 1.85; overflow-wrap: anywhere; }
-.blog-post-content > :first-child { margin-top: 18px; }
+.blog-post.announcement-card { margin-top: 0; }
+.blog-post-content { color: var(--muted); font-size: 15px; line-height: 1.85; overflow-wrap: anywhere; }
+.blog-post-content > :first-child { margin-top: 0; }
+.blog-post-content > :last-child { margin-bottom: 0; }
+.blog-post-content.is-collapsed { position: relative; display: block; max-height: 7.4em; overflow: hidden; }
 .blog-post-content img { display: block; max-width: 100%; height: auto; margin: 22px auto; border-radius: 3px; }
 .blog-post-content a { color: var(--terracotta); text-decoration: underline; text-underline-offset: 3px; }
 .blog-post-content table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
 .blog-post-content td, .blog-post-content th { padding: 8px; border: 1px solid var(--line); }
-.blog-post-source { display: inline-block; margin: 0 26px 28px; color: var(--terracotta); font-size: 12px; font-weight: bold; border-bottom: 1px solid currentColor; }
+.blog-post-source { display: table; margin-top: 20px; color: var(--terracotta); font-size: 12px; font-weight: bold; border-bottom: 1px solid currentColor; }
 .blog-archive-status { margin: 22px 0 12px; color: var(--muted); font-size: 12px; }
 .blog-load-more { padding: 13px 18px; border: 1px solid var(--terracotta); background: transparent; color: var(--terracotta); font-weight: bold; cursor: pointer; }
 .blog-load-more:hover { background: var(--terracotta); color: white; }

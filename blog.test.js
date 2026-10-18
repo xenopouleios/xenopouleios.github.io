@@ -17,6 +17,10 @@ test("blog archive renders full posts in bounded pages", () => {
   assert.match(importer, /const archiveChunkSize = 6/);
   assert.match(importer, /blog-archive-\$\{index \+ 1\}\.json/);
   assert.match(archive, /content\.innerHTML = post\.content/);
+  assert.match(archive, /"blog-post announcement-card"/);
+  assert.match(archive, /"announcement-content"/);
+  assert.match(archive, /"blog-post-content announcement-body is-collapsed"/);
+  assert.match(archive, /"ΔΙΑΒΑΣΤΕ ΠΕΡΙΣΣΟΤΕΡΑ →"/);
   assert.match(archive, /Φόρτωση παλαιότερων δημοσιεύσεων/);
   assert.match(archive, /validateArchive\(archive\)/);
 });
