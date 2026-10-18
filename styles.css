@@ -98,6 +98,7 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .band-label { font-size: 9px; letter-spacing: 2px; line-height: 2.1; }
 .details { padding-block: 28px; }
 .detail { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(0, 3fr); gap: 48px; padding-block: 45px; border-bottom: 1px solid var(--line); scroll-margin-top: 24px; }
+.detail > * { min-width: 0; }
 .detail-media .content-image { width: 100%; max-height: 360px; margin: 0; object-fit: contain; }
 #filoi .detail-media { perspective: 900px; }
 #filoi .detail-media .content-image { filter: drop-shadow(0 18px 22px #293e3438) drop-shadow(0 4px 6px #293e3429); transform: rotateY(-3deg) rotateX(1deg) translateY(-3px); transform-origin: center; }
@@ -167,7 +168,7 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
 .activity-listing { grid-column: 1 / -1; margin-top: 34px; padding-top: 30px; border-top: 2px solid #bb9673; }
 .activity-listing-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
 .activity-listing-heading > h3 { margin: 0; color: var(--terracotta); font: bold 23px/1.3 var(--serif); letter-spacing: 1.5px; }
-.activity-carousel { overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.activity-carousel { min-width: 0; max-width: 100%; overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .activity-carousel::-webkit-scrollbar { display: none; }
 .activity-carousel-next { display: grid; place-items: center; flex: 0 0 auto; width: 42px; height: 42px; padding: 0; border: 1px solid var(--terracotta); border-radius: 50%; background: transparent; color: var(--terracotta); font: 25px/1 Arial, sans-serif; cursor: pointer; transition: background .2s, color .2s, opacity .2s; }
 .activity-carousel-next:hover:not(:disabled) { background: var(--terracotta); color: white; }
@@ -271,7 +272,7 @@ h3 { margin: 0; font: 25px/1.25 var(--serif); letter-spacing: -.3px; }
   .intro-band > div > span:first-child { font-size: 45px; }
   .intro-band p { font-size: 24px; }
   .band-label { display: none; }
-  .detail { grid-template-columns: 1fr; gap: 13px; padding-block: 30px; }
+  .detail { grid-template-columns: minmax(0, 1fr); gap: 13px; padding-block: 30px; }
   .detail-media:empty { display: none; }
   .announcement-card { padding: 24px; }
   .announcement-content { grid-template-columns: minmax(110px, 150px) minmax(0, 1fr); gap: 20px; }

@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const website = await readFile(new URL("./website.js", import.meta.url), "utf8");
 const admin = await readFile(new URL("./admin.js", import.meta.url), "utf8");
 const privateAdmin = await readFile(new URL("./activity-admin.js", import.meta.url), "utf8");
+const styles = await readFile(new URL("./styles.css", import.meta.url), "utf8");
 const database = await readFile(new URL("./supabase/activities.sql", import.meta.url), "utf8");
 
 test("activity cards link to details with category-specific registration forms", () => {
@@ -33,6 +34,9 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(website, /function revealVisibleElements\(\)/);
   assert.match(website, /bounds\.top >= window\.innerHeight/);
   assert.match(website, /"ΣΥΝΑΝΤΗΣΕΙΣ ΤΟΥ ΔΙΚΤΥΟΥ"/);
+  assert.match(styles, /\.detail > \* \{ min-width: 0; \}/);
+  assert.match(styles, /\.detail \{ grid-template-columns: minmax\(0, 1fr\);/);
+  assert.match(styles, /\.activity-carousel \{ min-width: 0; max-width: 100%;/);
 });
 
 test("activity publishing controls summaries and registration availability", () => {
