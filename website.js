@@ -1,6 +1,7 @@
 import { client, configured, loadContent } from "./cms.js";
 import { activitySections, allFields, cardSections, normalizeContent, readDefaults, safeImageUrl, sections, validateContent } from "./content.js";
 import { mountMemberPortal } from "./member-portal.js";
+import friendsLogoUrl from "./friends-logo.png";
 import "./library.css";
 
 const defaults = readDefaults(document);
@@ -315,7 +316,8 @@ export function renderContent(content) {
   for (const [id, image] of Object.entries(content.images)) {
     if (!image.url) continue;
     const img = document.createElement("img");
-    img.src = safeImageUrl(image.url);
+    const imageUrl = safeImageUrl(image.url);
+    img.src = id === "filoi" && imageUrl.endsWith("/8adb0ced-4149-4ffc-8e5c-84138a2294ad.png") ? friendsLogoUrl : imageUrl;
     img.alt = image.alt;
     if (id === "logo") {
       img.className = "brand-logo";
