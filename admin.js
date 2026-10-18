@@ -214,10 +214,26 @@ function showWorkspace() {
   $("account-label").textContent = demo ? "Γνωρίστε τη διαχείριση χωρίς να αλλάξει η ιστοσελίδα." : "Κάθε αλλαγή δημοσιεύεται μόνο όταν το επιλέξετε εσείς.";
   const buttons = $("section-buttons");
   buttons.replaceChildren();
-  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...editableSections, ["activity-archive", "Αρχείο προηγούμενων δράσεων"], ["books", "Βιβλία και έλεγχος καταλόγου"], ["members", "Μέλη — ιδιωτικό μητρώο"], ["lending", "Εγγραφές και δανεισμοί"], ["activity-registrations", "Δηλώσεις δράσεων — ιδιωτικά"]]) {
-    const item = button(label, () => selectEditor(id), "section-button");
-    item.dataset.section = id;
-    buttons.append(item);
+  const groups = [
+    ["Σελίδες ιστοσελίδας", [["home", "Αρχική σελίδα και λογότυπο"], ...editableSections]],
+    ["Αναρτήσεις και διαχείριση", [
+      ["posts", "Αναρτήσεις και ανακοινώσεις"],
+      ["activity-archive", "Αρχείο προηγούμενων δράσεων"],
+      ["books", "Βιβλία και έλεγχος καταλόγου"],
+      ["members", "Μέλη — ιδιωτικό μητρώο"],
+      ["lending", "Εγγραφές και δανεισμοί"],
+      ["activity-registrations", "Δηλώσεις δράσεων — ιδιωτικά"],
+    ]],
+  ];
+  for (const [title, entries] of groups) {
+    const group = element("section", undefined, "section-group");
+    group.append(element("h3", title, "section-group-title"));
+    for (const [id, label] of entries) {
+      const item = button(label, () => selectEditor(id), "section-button");
+      item.dataset.section = id;
+      group.append(item);
+    }
+    buttons.append(group);
   }
   renderEditor();
   updateState();
@@ -240,7 +256,7 @@ function renderEditor(focus = true) {
   const root = $("editor");
   root.classList.remove("library-catalog");
   root.replaceChildren();
-  document.querySelectorAll(".section-button").forEach(item => item.setAttribute("aria-current", String(item.dataset.section === active || (item.id === "posts-button" && active === "posts"))));
+  document.querySelectorAll(".section-button").forEach(item => item.setAttribute("aria-current", String(item.dataset.section === active)));
   if (active === "activity-registrations") {
     $("editor-title").textContent = "Δηλώσεις συμμετοχής σε δράσεις";
     $("editor-help").textContent = "Προσωπικά στοιχεία, ορατά μόνο στους διαχειριστές. Διαγράψτε τα όταν δεν είναι πλέον απαραίτητα για τη δράση.";
@@ -453,7 +469,6 @@ $("start-demo").addEventListener("click", () => run(async () => {
   await loadDefaults();
   showWorkspace();
 }));
-$("posts-button").addEventListener("click", () => selectEditor("posts"));
 $("show-password").addEventListener("click", () => {
   const show = $("password").type === "password";
   $("password").type = show ? "text" : "password";
