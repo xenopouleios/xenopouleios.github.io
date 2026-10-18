@@ -55,7 +55,7 @@ export default defineConfig(({ mode }) => {
           ["admin.js", "admin-GmBm2CwR.js"],
           ["admin.css", "admin-BbR9_CR5.css"],
           ["logo.png", "logo-ChW4RBXG.png"],
-          ["favicon.svg", "favicon-Bmq9bexH.svg"],
+          ["favicon.png", "favicon-Xenopoulos.png"],
         ].map(([source, alias]) => copyFile(resolve(output, "assets", source), resolve(output, "assets", alias))));
       },
     }],
