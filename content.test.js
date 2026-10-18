@@ -90,6 +90,26 @@ test("malformed documents and unknown fields are rejected", () => {
   assert.throws(() => validateContent(content));
 });
 
+test("archived activity overrides support website-only edits and deletions", () => {
+  const content = emptyContent();
+  content.activity_archive_overrides["123"] = {
+    hidden: false,
+    title: "Διορθωμένος τίτλος",
+    date: "2026-10-18",
+    event_date: "2026-10-17",
+    summary: "Διορθωμένη σύντομη περιγραφή.",
+    image: "https://example.com/activity.jpg",
+    alt: "Περιγραφή φωτογραφίας",
+    body: "Διορθωμένο αναλυτικό κείμενο.",
+    audience: "children",
+  };
+  content.activity_archive_overrides["456"] = { hidden: true };
+  assert.equal(validateContent(content), content);
+  assert.throws(() => validateContent({ ...content, activity_archive_overrides: { abc: { hidden: true } } }));
+  assert.throws(() => validateContent({ ...content, activity_archive_overrides: { 123: { ...content.activity_archive_overrides["123"], audience: "all" } } }));
+  assert.throws(() => validateContent({ ...content, activity_archive_overrides: { 123: { ...content.activity_archive_overrides["123"], image: "http://example.com/activity.jpg" } } }));
+});
+
 test("text is treated as text, not HTML", () => {
   const content = emptyContent();
   content.fields["hero-title"] = '<script>alert("test")</script>';

@@ -58,6 +58,9 @@ summary { font-weight: bold; }
 .post-summary { padding: 22px 0; border-bottom: 1px solid #d9ded5; }
 .post-summary h3 { margin: 0 0 8px; overflow-wrap: anywhere; }
 .post-form { margin-top: 30px; padding-top: 24px; border-top: 2px solid #d9ded5; }
+.archive-search { display: grid; grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr) auto; align-items: end; gap: 16px; margin-bottom: 20px; }
+.archive-search label { margin: 0; }
+.archive-edit-form .post-image { display: block; max-width: 100%; max-height: 280px; margin: 18px 0; object-fit: contain; }
 .checkbox-field { display: flex; align-items: center; gap: 10px; }
 .checkbox-field input[type=checkbox] { display: inline-block; width: 24px; min-height: 24px; margin: 0; }
 dialog { width: min(620px, calc(100% - 32px)); border: 2px solid #294c3b; border-radius: 12px; padding: 32px; color: #243c32; }
@@ -72,6 +75,7 @@ dialog::backdrop { background: #15271ac9; }
   #section-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
   .publish-bar { position: static; flex-direction: column; align-items: stretch; }
   .publish-bar .actions > button { flex: 1; }
+  .archive-search { grid-template-columns: 1fr; align-items: stretch; }
 }
 @media (max-width: 520px) {
   .admin-main { padding-inline: 14px; margin-top: 20px; }

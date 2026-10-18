@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const website = await readFile(new URL("./website.js", import.meta.url), "utf8");
 const admin = await readFile(new URL("./admin.js", import.meta.url), "utf8");
 const privateAdmin = await readFile(new URL("./activity-admin.js", import.meta.url), "utf8");
+const archiveAdmin = await readFile(new URL("./activity-archive-admin.js", import.meta.url), "utf8");
 const styles = await readFile(new URL("./styles.css", import.meta.url), "utf8");
 const database = await readFile(new URL("./supabase/activities.sql", import.meta.url), "utf8");
 
@@ -27,10 +28,11 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(website, /\? post\.activity_period/);
   assert.match(website, /sortActivityGrid\(grid, period === "upcoming"\)/);
   assert.match(website, /sortActivityGrid\(grid, false\)/);
-  assert.match(website, /mountPreviousActivityArchive\(activityGrids\)/);
+  assert.match(website, /mountPreviousActivityArchive\(activityGrids, content\.activity_archive_overrides\)/);
+  assert.match(website, /archivedPostWithOverride\(post, audience, overrides\)/);
   assert.match(website, /activity-archive-\$\{audience\}\.json/);
   assert.match(website, /createActivityCard\(post, activityUrl\(post\.id\)\)/);
-  assert.match(website, /async function loadArchivedActivity\(id\)/);
+  assert.match(website, /async function loadArchivedActivity\(id, overrides\)/);
   assert.match(website, /archivedContent\.innerHTML = post\.content/);
   assert.match(website, /"activity-card-meta"/);
   assert.match(website, /createNode\("span", post\.age_range\.trim\(\)\)/);
@@ -58,6 +60,12 @@ test("activity publishing controls summaries and registration availability", () 
   assert.match(admin, /"Ηλικίες στις οποίες απευθύνεται"/);
   assert.match(admin, /ageRangeSections\.has\(post\.section\)/);
   assert.match(admin, /mountActivityAdmin/);
+  assert.match(admin, /mountActivityArchiveAdmin/);
+  assert.match(admin, /"Αρχείο προηγούμενων δράσεων"/);
+  assert.match(archiveAdmin, /"Αναζήτηση τίτλου"/);
+  assert.match(archiveAdmin, /"Διαγραφή από την ιστοσελίδα"/);
+  assert.match(archiveAdmin, /activity_archive_overrides/);
+  assert.match(archiveAdmin, /const pageSize = 20/);
   assert.match(privateAdmin, /activity_registrations/);
   assert.match(privateAdmin, /activity_registration_delete/);
 });

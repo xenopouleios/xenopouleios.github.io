@@ -86,7 +86,7 @@ const legacyNavigation = {
   nea: "Νέα - Ανακοινώσεις",
   epikoinonia: "Επικοινωνία",
 };
-export const emptyContent = () => ({ fields: {}, images: {}, posts: [] });
+export const emptyContent = () => ({ fields: {}, images: {}, posts: [], activity_archive_overrides: {} });
 export const maxImageBytes = 5 * 1024 * 1024;
 export const imageTypes = ["image/jpeg", "image/png", "image/webp"];
 
@@ -108,6 +108,22 @@ export function validateContent(content) {
   if (!content || typeof content !== "object" || Array.isArray(content)) throw new Error("Μη έγκυρο περιεχόμενο.");
   if (!content.fields || !content.images || !Array.isArray(content.posts)) throw new Error("Λείπουν στοιχεία περιεχομένου.");
   if (typeof content.fields !== "object" || Array.isArray(content.fields) || typeof content.images !== "object" || Array.isArray(content.images)) throw new Error("Μη έγκυρα πεδία περιεχομένου.");
+  const archiveOverrides = content.activity_archive_overrides ?? {};
+  if (!archiveOverrides || typeof archiveOverrides !== "object" || Array.isArray(archiveOverrides) || Object.keys(archiveOverrides).length > 1000) throw new Error("Μη έγκυρες αλλαγές αρχείου δράσεων.");
+  for (const [id, override] of Object.entries(archiveOverrides)) {
+    if (!/^\d{1,30}$/.test(id) || !override || typeof override !== "object" || Array.isArray(override)) throw new Error("Μη έγκυρη αλλαγή αρχειακής δράσης.");
+    const allowedFields = new Set(["hidden", "title", "date", "event_date", "summary", "image", "alt", "body", "audience"]);
+    if (Object.keys(override).some(key => !allowedFields.has(key)) || typeof override.hidden !== "boolean") throw new Error("Μη έγκυρο πεδίο αρχειακής δράσης.");
+    if (override.hidden) continue;
+    if (typeof override.title !== "string" || !override.title.trim() || override.title.length > 300
+      || typeof override.summary !== "string" || !override.summary.trim() || override.summary.length > 500
+      || typeof override.body !== "string" || !override.body.trim() || override.body.length > 50000
+      || typeof override.alt !== "string" || override.alt.length > 500
+      || !["children", "adults"].includes(override.audience)) throw new Error("Μη έγκυρη αρχειακή δράση.");
+    if (typeof override.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(override.date) || !Number.isFinite(Date.parse(override.date)) || new Date(override.date).toISOString().slice(0, 10) !== override.date) throw new Error("Μη έγκυρη ημερομηνία αρχειακής ανάρτησης.");
+    if (override.event_date !== undefined && (typeof override.event_date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(override.event_date) || !Number.isFinite(Date.parse(override.event_date)) || new Date(override.event_date).toISOString().slice(0, 10) !== override.event_date)) throw new Error("Μη έγκυρη ημερομηνία αρχειακής δράσης.");
+    safeImageUrl(override.image);
+  }
   const fieldIds = new Set([...allFields.map(([id]) => id), ...legacySections.flatMap(id => sectionFields(id).map(([fieldId]) => fieldId)), ...legacyNoteIds, ...legacySectionLabelIds, ...legacyCardLabelIds, "stigmes-draseon-nav"]);
   for (const [id, value] of Object.entries(content.fields)) {
     if (!fieldIds.has(id) || typeof value !== "string" || value.length > 20000) throw new Error("Μη έγκυρο πεδίο κειμένου.");
@@ -139,6 +155,7 @@ export function validateContent(content) {
 
 export function normalizeContent(content, defaults = {}) {
   const normalized = structuredClone(content);
+  normalized.activity_archive_overrides ??= {};
   for (const [id, label] of Object.entries(legacyNavigation)) {
     if (normalized.fields[`${id}-nav`] === label) delete normalized.fields[`${id}-nav`];
   }

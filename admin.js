@@ -5,6 +5,7 @@ import { mountLibraryAdmin } from "./library-admin.js";
 import { mountMembersAdmin } from "./members-admin.js";
 import { mountLendingAdmin } from "./lending-admin.js";
 import { mountActivityAdmin } from "./activity-admin.js";
+import { mountActivityArchiveAdmin } from "./activity-archive-admin.js";
 import { createUndoHistory } from "./admin-history.js";
 import "./library.css";
 
@@ -33,7 +34,7 @@ const postDestinations = editableSections.flatMap(([id, title]) => activitySecti
     ]
   : [[id, title]]);
 const undoHistory = createUndoHistory();
-const contentEditors = () => active === "home" || active === "posts" || sections.some(([id]) => id === active);
+const contentEditors = () => active === "home" || active === "posts" || active === "activity-archive" || sections.some(([id]) => id === active);
 
 function message(text, kind = "") {
   $("status").textContent = text;
@@ -74,7 +75,7 @@ async function run(action) {
 
 function updateState() {
   $("publish").disabled = demo || !dirty || busy;
-  $("preview").disabled = busy || bookDirty || ["members", "lending", "activity-registrations"].includes(active);
+  $("preview").disabled = busy || bookDirty || ["members", "lending", "activity-registrations", "activity-archive"].includes(active);
   $("undo").disabled = busy || !undoHistory.canUndo || !contentEditors() || bookDirty || memberDirty;
   $("save-state").textContent = demo ? "Δοκιμή μόνο — δεν γίνεται αποθήκευση." : memberDirty
     ? `Το μέλος δεν αποθηκεύτηκε ακόμη. Πατήστε «Αποθήκευση μέλους — ιδιωτικά».${dirty ? " Υπάρχουν επίσης αδημοσίευτες αλλαγές στα κείμενα." : ""}`
@@ -213,7 +214,7 @@ function showWorkspace() {
   $("account-label").textContent = demo ? "Γνωρίστε τη διαχείριση χωρίς να αλλάξει η ιστοσελίδα." : "Κάθε αλλαγή δημοσιεύεται μόνο όταν το επιλέξετε εσείς.";
   const buttons = $("section-buttons");
   buttons.replaceChildren();
-  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...editableSections, ["books", "Βιβλία και έλεγχος καταλόγου"], ["members", "Μέλη — ιδιωτικό μητρώο"], ["lending", "Εγγραφές και δανεισμοί"], ["activity-registrations", "Δηλώσεις δράσεων — ιδιωτικά"]]) {
+  for (const [id, label] of [["home", "Αρχική σελίδα και λογότυπο"], ...editableSections, ["activity-archive", "Αρχείο προηγούμενων δράσεων"], ["books", "Βιβλία και έλεγχος καταλόγου"], ["members", "Μέλη — ιδιωτικό μητρώο"], ["lending", "Εγγραφές και δανεισμοί"], ["activity-registrations", "Δηλώσεις δράσεων — ιδιωτικά"]]) {
     const item = button(label, () => selectEditor(id), "section-button");
     item.dataset.section = id;
     buttons.append(item);
@@ -245,6 +246,10 @@ function renderEditor(focus = true) {
     $("editor-help").textContent = "Προσωπικά στοιχεία, ορατά μόνο στους διαχειριστές. Διαγράψτε τα όταν δεν είναι πλέον απαραίτητα για τη δράση.";
     if (activityRegistrationsEnabled) disposeMembers = mountActivityAdmin(root, { run, message, confirmAction, demo });
     else root.append(element("p", "Η ιδιωτική βάση δηλώσεων δεν έχει ενεργοποιηθεί ακόμη."));
+  } else if (active === "activity-archive") {
+    $("editor-title").textContent = "Αρχείο προηγούμενων δράσεων";
+    $("editor-help").textContent = "Αναζητήστε, επεξεργαστείτε ή διαγράψτε τις εισαγόμενες παλιές δράσεις. Οι αλλαγές εφαρμόζονται μόνο στη νέα ιστοσελίδα όταν πατήσετε «Δημοσίευση αλλαγών».";
+    disposeMembers = mountActivityArchiveAdmin(root, { content, changed, rememberChange, run, message, confirmAction, uploadImage, demo });
   } else if (active === "lending") {
     $("editor-title").textContent = "Εγγραφές και δανεισμοί";
     $("editor-help").textContent = "Οι ενέργειες αποθηκεύονται αμέσως και ιδιωτικά. Τα email έγκρισης αποστέλλονται χειροκίνητα από εσάς.";
@@ -505,7 +510,7 @@ $("logout").addEventListener("click", async () => {
   });
 });
 $("preview").addEventListener("click", () => {
-  if (["members", "lending", "activity-registrations"].includes(active)) return;
+  if (["members", "lending", "activity-registrations", "activity-archive"].includes(active)) return;
   try {
     validateContent(content);
     sessionStorage.setItem(`xenopouleio-preview-${previewId}`, JSON.stringify(content));

@@ -195,16 +195,29 @@ function sortActivityGrid(grid, ascending) {
   grid.append(...cards);
 }
 
-async function mountPreviousActivityArchive(activityGrids) {
+function archivedPostWithOverride(post, audience, overrides) {
+  const override = overrides[post.id];
+  if (override?.hidden) return null;
+  return override ? { ...post, audience, ...override, archivedOverride: true } : { ...post, audience };
+}
+
+async function mountPreviousActivityArchive(activityGrids, overrides) {
   if (!activitySections.has(activePage)) return;
   try {
-    const audience = activePage === "draseis-paidia" ? "children" : "adults";
-    const response = await fetch(new URL(`./activity-archive-${audience}.json`, location.href));
+    const targetAudience = activePage === "draseis-paidia" ? "children" : "adults";
+    const response = await fetch(new URL(`./activity-archive-${targetAudience}.json`, location.href));
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const archive = await response.json();
     if (!Array.isArray(archive.posts)) throw new Error("Μη έγκυρο αρχείο προηγούμενων δράσεων.");
+    const sourceIds = new Set(archive.posts.map(post => post.id));
+    const posts = archive.posts.map(post => archivedPostWithOverride(post, targetAudience, overrides));
+    for (const [id, override] of Object.entries(overrides)) {
+      if (!override.hidden && override.audience === targetAudience && !sourceIds.has(id)) {
+        posts.push({ id, originalUrl: "", ...override, archivedOverride: true });
+      }
+    }
     const grid = activityGrids.get(`${activePage}:previous`);
-    for (const post of archive.posts) {
+    for (const post of posts.filter(post => post && post.audience === targetAudience)) {
       if (!post || !["title", "date", "summary", "image", "originalUrl"].every(field => typeof post[field] === "string")) {
         throw new Error("Μη έγκυρη προηγούμενη δράση.");
       }
@@ -285,7 +298,7 @@ function activityRegistrationForm(post) {
   return section;
 }
 
-async function loadArchivedActivity(id) {
+async function loadArchivedActivity(id, overrides) {
   const archives = await Promise.all([
     ["children", "draseis-paidia"],
     ["adults", "draseis-enilikes"],
@@ -294,16 +307,19 @@ async function loadArchivedActivity(id) {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const archive = await response.json();
     if (!Array.isArray(archive.posts)) throw new Error("Μη έγκυρο αρχείο προηγούμενων δράσεων.");
-    return archive.posts.map(post => ({ ...post, section, archived: true }));
+    return archive.posts.map(post => {
+      const merged = archivedPostWithOverride(post, audience, overrides);
+      return merged ? { ...merged, section: merged.audience === "children" ? "draseis-paidia" : "draseis-enilikes", archived: true } : null;
+    });
   }));
-  const post = archives.flat().find(item => item.id === id);
+  const post = archives.flat().find(item => item?.id === id);
   if (post && !["title", "date", "content", "image"].every(field => typeof post[field] === "string")) {
     throw new Error("Μη έγκυρη προηγούμενη δράση.");
   }
   return post;
 }
 
-async function renderActivityDetail(posts) {
+async function renderActivityDetail(posts, archiveOverrides) {
   if (!activityPage) return;
   const root = document.querySelector("#activity-detail");
   root.hidden = false;
@@ -312,7 +328,7 @@ async function renderActivityDetail(posts) {
   let post = posts.find(item => item.id === id && cardSections.has(item.section));
   if (!post && id) {
     try {
-      post = await loadArchivedActivity(id);
+      post = await loadArchivedActivity(id, archiveOverrides);
     } catch (error) {
       console.error("Archived activity loading failed", error);
       root.replaceChildren(createNode("h1", "Δεν ήταν δυνατή η φόρτωση της δράσης"), createNode("p", "Δοκιμάστε ξανά σε λίγο."));
@@ -334,7 +350,9 @@ async function renderActivityDetail(posts) {
   const title = createNode("h1", post.title);
   article.append(time, title);
   const activityContent = createNode("div", undefined, "activity-content");
-  if (post.archived) {
+  if (post.archivedOverride) {
+    activityContent.append(createNode("p", post.body, "activity-full-text"));
+  } else if (post.archived) {
     const archivedContent = createNode("div", undefined, "activity-full-text activity-archive-content");
     archivedContent.innerHTML = post.content;
     activityContent.append(archivedContent);
@@ -569,8 +587,8 @@ export function renderContent(content) {
     }
     document.querySelector(`#${post.section} h2`).parentElement.append(article);
   }
-  mountPreviousActivityArchive(activityGrids);
-  renderActivityDetail(content.posts);
+  mountPreviousActivityArchive(activityGrids, content.activity_archive_overrides);
+  renderActivityDetail(content.posts, content.activity_archive_overrides);
   observeScrollReveals();
   updateTitle();
 }
