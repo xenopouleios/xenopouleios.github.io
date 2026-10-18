@@ -5,7 +5,7 @@
 body { margin: 0; }
 a { color: #245c46; text-underline-offset: 4px; }
 button, input, textarea, select { font: inherit; }
-button, summary { cursor: pointer; }
+button { cursor: pointer; }
 button { min-height: 52px; padding: 12px 22px; border: 2px solid #294c3b; background: #294c3b; color: #fff; border-radius: 8px; font-weight: bold; line-height: 1.4; }
 button:hover:not(:disabled) { background: #173225; }
 button:disabled { cursor: not-allowed; opacity: .55; }
@@ -37,8 +37,6 @@ form > button { margin: 24px 10px 0 0; }
 .message.warning { background: #fff6dd; color: #654816; border-color: #c49a43; }
 .workspace-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
 .workspace-heading p { color: #536255; }
-.steps { display: flex; flex-wrap: wrap; gap: 20px 40px; padding: 20px 20px 20px 45px; margin: 0 0 28px; background: #e6ebdf; border-radius: 8px; }
-.steps li { padding-left: 4px; }
 .editor-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: start; }
 .sidebar { padding: 24px 18px; }
 .sidebar h2 { font-size: 22px; padding-inline: 10px; }
@@ -49,9 +47,6 @@ form > button { margin: 24px 10px 0 0; }
 .section-button { width: 100%; display: block; text-align: left; border: 2px solid transparent; background: transparent; color: #294c3b; font-weight: normal; padding: 12px; margin-bottom: 5px; }
 .section-button:hover:not(:disabled) { background: #edf2e9; }
 .section-button[aria-current=true] { border-color: #294c3b; background: #e6eddf; font-weight: bold; }
-details { border-top: 1px solid #d9ded5; padding: 20px 10px 0; margin-top: 18px; font-size: 16px; }
-details p { margin-top: 16px; }
-summary { font-weight: bold; }
 .editor-panel { min-height: 440px; }
 .hint { display: block; font-size: 16px; color: #586459; margin: 8px 0 16px; }
 .image-editor { padding-top: 22px; margin-top: 32px; border-top: 1px solid #d9ded5; }
