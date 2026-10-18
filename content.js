@@ -120,13 +120,14 @@ export function validateContent(content) {
   for (const post of content.posts) {
     if (!post || typeof post.id !== "string" || ids.has(post.id) || ![...sections.map(([id]) => id), ...legacySections].includes(post.section)) throw new Error("Μη έγκυρη ανάρτηση.");
     ids.add(post.id);
-    const allowedPostFields = new Set(["id", "section", "title", "body", "date", "image", "alt", "summary", "registration_open"]);
+    const allowedPostFields = new Set(["id", "section", "title", "body", "date", "image", "alt", "summary", "registration_open", "age_range"]);
     if (Object.keys(post).some(key => !allowedPostFields.has(key))) throw new Error("Μη έγκυρο πεδίο ανάρτησης.");
     if (typeof post.title !== "string" || !post.title.trim() || post.title.length > 300 || typeof post.body !== "string" || !post.body.trim() || post.body.length > 50000 || typeof post.alt !== "string" || post.alt.length > 500) throw new Error("Συμπληρώστε τίτλο και κείμενο στην ανάρτηση.");
     if (typeof post.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(post.date) || !Number.isFinite(Date.parse(post.date)) || new Date(post.date).toISOString().slice(0, 10) !== post.date) throw new Error("Μη έγκυρη ημερομηνία.");
     if (typeof post.image !== "string") throw new Error("Μη έγκυρη φωτογραφία ανάρτησης.");
     if (post.summary !== undefined && (!cardSections.has(post.section) || typeof post.summary !== "string" || !post.summary.trim() || post.summary.length > 500)) throw new Error("Μη έγκυρη σύντομη περιγραφή κάρτας.");
     if (post.registration_open !== undefined && (!activitySections.has(post.section) || typeof post.registration_open !== "boolean")) throw new Error("Μη έγκυρη κατάσταση συμμετοχών.");
+    if (post.age_range !== undefined && (post.section !== "draseis-paidia" || typeof post.age_range !== "string" || post.age_range.length > 100)) throw new Error("Μη έγκυρες ηλικίες δράσης.");
     safeImageUrl(post.image);
   }
   return content;

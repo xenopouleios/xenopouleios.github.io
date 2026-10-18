@@ -50,6 +50,7 @@ test("activity posts support card summaries and controlled registration", () => 
     section: "draseis-paidia",
     summary: "Μια σύντομη παρουσίαση της δράσης.",
     registration_open: true,
+    age_range: "6–10 ετών",
   };
   const content = emptyContent();
   content.posts = [activity];
@@ -63,6 +64,8 @@ test("activity posts support card summaries and controlled registration", () => 
   assert.equal(normalized.posts[0].registration_open, false);
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, summary: "" }] }));
   assert.throws(() => validateContent({ ...content, posts: [{ ...activity, registration_open: "yes" }] }));
+  assert.throws(() => validateContent({ ...content, posts: [{ ...activity, age_range: "α".repeat(101) }] }));
+  assert.throws(() => validateContent({ ...content, posts: [{ ...activity, section: "draseis-enilikes" }] }));
   const freinet = emptyContent();
   freinet.posts = [{ ...post(), section: "freinet", body: "Αναλυτικό κείμενο του Δικτύου Freinet." }];
   assert.equal(normalizeContent(freinet).posts[0].summary, "Αναλυτικό κείμενο του Δικτύου Freinet.");

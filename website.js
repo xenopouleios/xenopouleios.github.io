@@ -394,6 +394,16 @@ export function renderContent(content) {
       const grid = cardGrid(post.section, period);
       const card = createNode("a", undefined, "activity-card");
       card.href = activityUrl(post.id);
+      if (period === "upcoming" && activitySections.has(post.section)) {
+        const meta = createNode("div", undefined, "activity-card-meta");
+        if (post.section === "draseis-paidia" && post.age_range?.trim()) {
+          meta.append(createNode("span", `Ηλικίες: ${post.age_range.trim()}`));
+        }
+        const eventDate = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(post.date)));
+        eventDate.dateTime = post.date;
+        meta.append(eventDate);
+        card.append(meta);
+      }
       if (post.image) {
         const image = createNode("img");
         image.src = safeImageUrl(post.image);

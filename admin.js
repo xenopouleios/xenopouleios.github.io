@@ -328,12 +328,17 @@ function editPost(post, root) {
     else delete post.summary;
     if (activitySections.has(post.section)) post.registration_open ??= false;
     else delete post.registration_open;
+    if (post.section === "draseis-paidia") post.age_range ??= "";
+    else delete post.age_range;
     changed();
     editPost(post, root);
   });
   form.append(label, select);
   field(form, "post-title", "Τίτλος ανάρτησης", post.title, value => { post.title = value; }, { maxLength: 300, required: true });
-  field(form, "post-date", "Ημερομηνία", post.date, value => { post.date = value; }, { type: "date", required: true });
+  field(form, "post-date", activitySections.has(post.section) ? "Ημερομηνία διεξαγωγής" : "Ημερομηνία", post.date, value => { post.date = value; }, { type: "date", required: true });
+  if (post.section === "draseis-paidia") {
+    field(form, "post-age-range", "Ηλικίες στις οποίες απευθύνεται", post.age_range ?? "", value => { post.age_range = value; }, { maxLength: 100 });
+  }
   if (cardSections.has(post.section)) {
     field(form, "post-summary", "Λίγα λόγια για την κάρτα", post.summary ?? "", value => { post.summary = value; }, { multiline: true, maxLength: 500, required: true });
   }

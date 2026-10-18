@@ -22,6 +22,9 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(website, /post\.date >= today/);
   assert.match(website, /viewport\.scrollBy/);
   assert.match(website, /"activity-carousel-next"/);
+  assert.match(website, /"activity-card-meta"/);
+  assert.match(website, /`Ηλικίες: \$\{post\.age_range\.trim\(\)\}`/);
+  assert.match(website, /dateStyle: "medium"/);
   assert.match(website, /"ΣΥΝΑΝΤΗΣΕΙΣ ΤΟΥ ΔΙΚΤΥΟΥ"/);
 });
 
@@ -29,6 +32,8 @@ test("activity publishing controls summaries and registration availability", () 
   assert.match(admin, /Λίγα λόγια για την κάρτα/);
   assert.match(admin, /cardSections\.has\(post\.section\)/);
   assert.match(admin, /Οι δηλώσεις συμμετοχής είναι ανοικτές/);
+  assert.match(admin, /"Ημερομηνία διεξαγωγής"/);
+  assert.match(admin, /"Ηλικίες στις οποίες απευθύνεται"/);
   assert.match(admin, /mountActivityAdmin/);
   assert.match(privateAdmin, /activity_registrations/);
   assert.match(privateAdmin, /activity_registration_delete/);
