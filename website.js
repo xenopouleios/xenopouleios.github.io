@@ -479,7 +479,7 @@ export function renderContent(content) {
       const card = createActivityCard(post, activityUrl(post.id), post.section === "freinet" ? "✳" : "Ξ");
       const meta = createNode("div", undefined, "activity-card-meta");
       if (ageRangeSections.has(post.section) && post.age_range?.trim()) {
-        meta.append(createNode("span", `Ηλικίες: ${post.age_range.trim()}`));
+        meta.append(createNode("span", post.age_range.trim()));
       }
       const eventDate = createNode("time", new Intl.DateTimeFormat("el-GR", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(post.event_date)));
       eventDate.dateTime = post.event_date;

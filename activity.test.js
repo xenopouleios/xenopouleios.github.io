@@ -28,7 +28,7 @@ test("activity cards link to details with category-specific registration forms",
   assert.match(website, /async function loadArchivedActivity\(id\)/);
   assert.match(website, /archivedContent\.innerHTML = post\.content/);
   assert.match(website, /"activity-card-meta"/);
-  assert.match(website, /`Ηλικίες: \$\{post\.age_range\.trim\(\)\}`/);
+  assert.match(website, /createNode\("span", post\.age_range\.trim\(\)\)/);
   assert.match(website, /dateStyle: "medium"/);
   assert.match(website, /function revealVisibleElements\(\)/);
   assert.match(website, /bounds\.top >= window\.innerHeight/);
